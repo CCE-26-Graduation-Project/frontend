@@ -1,0 +1,46 @@
+<!doctype html>
+<html data-palette="clear-sky">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="_shared.css">
+<style>
+  .search {
+    height: 52px; border-radius: 24px; background: var(--bg-2);
+    display: flex; align-items: center; padding: 0 16px; gap: 12px;
+    box-shadow: var(--shadow-rest);
+  }
+  .search svg { width: 22px; height: 22px; stroke: var(--text-2); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .search input {
+    flex: 1; border: none; outline: none; background: transparent;
+    font: 400 17px/1 var(--font-sans); color: var(--text-1);
+  }
+  .search input::placeholder { color: var(--text-2); }
+  .icons { display: flex; gap: 14px; }
+  .icons .ic { width: 22px; height: 22px; color: var(--text-1); }
+  .label { font: 600 11px/1.2 var(--font-sans); color: var(--text-2); letter-spacing: 0.08em; text-transform: uppercase; }
+
+  .search.active { background: #fff; border: 1.5px solid var(--accent); box-shadow: var(--shadow-card); }
+  .search.active input { color: var(--text-1); }
+  .group { display: flex; flex-direction: column; gap: 8px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="group">
+    <div class="label">Default</div>
+    <div class="search">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input value="" placeholder="Search any product…" readonly>
+      <svg viewBox="0 0 24 24" style="stroke:var(--text-1)"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></svg>
+      <svg viewBox="0 0 24 24" style="stroke:var(--text-1)"><path d="M14.5 4h-5L8 6H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="4"/></svg>
+    </div>
+  </div>
+  <div class="group">
+    <div class="label">Focused</div>
+    <div class="search active">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input value="iPhone 15 Pro" readonly>
+    </div>
+  </div>
+</div>
+</body></html>

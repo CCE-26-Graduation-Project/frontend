@@ -1,0 +1,159 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="_shared.css">
+<style>
+  body { margin: 0; padding: 0; background: var(--bg-1); }
+  .card { background: var(--bg-1); padding: 28px 24px 24px; }
+  .header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 20px; }
+  .pname { font: 700 22px/1.1 var(--font-sans); letter-spacing: -0.022em; color: var(--text-1); }
+  .ptag { font-family: var(--font-mono); font-size: 11px; color: var(--text-2); }
+
+  /* Mock "screen" — shows the page / surface relationship in context */
+  .mock {
+    position: relative; height: 260px; border-radius: 20px;
+    background: #FAFAF7; padding: 16px;
+    box-shadow: inset 0 0 0 1px var(--divider);
+    overflow: hidden;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .mock-top {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 4px 4px 8px;
+  }
+  .mock-title { font: 700 16px/1 var(--font-sans); letter-spacing: -0.018em; color: #1E2B4D; }
+  .mock-bell {
+    width: 32px; height: 32px; border-radius: 999px;
+    background: #FFEBCC; display: flex; align-items: center; justify-content: center;
+  }
+  .mock-card {
+    flex: 1; background: #FFF9D2; border-radius: 14px;
+    padding: 12px 14px; display: flex; gap: 10px; align-items: center;
+    box-shadow: 0 2px 8px rgba(30, 43, 77, 0.08);
+  }
+  .mock-thumb {
+    width: 56px; height: 56px; border-radius: 10px;
+    background: linear-gradient(135deg, #FFEBCC, #BFDDF0);
+    flex-shrink: 0;
+  }
+  .mock-meta { display: flex; flex-direction: column; gap: 4px; }
+  .mock-line1 { font: 600 13px/1.2 var(--font-sans); color: #1E2B4D; }
+  .mock-line2 { font: 400 11px/1.2 var(--font-sans); color: #6F7480; }
+  .mock-price { font: 600 14px/1 var(--font-mono); color: #3FA66B; margin-top: 2px; }
+  .mock-nav {
+    position: absolute; left: 16px; right: 16px; bottom: 14px;
+    height: 42px; border-radius: 22px; background: #FFF9D2;
+    box-shadow: 0 2px 4px rgba(30,43,77,0.08), 0 10px 20px rgba(30,43,77,0.14);
+    display: flex; align-items: center; justify-content: space-around; padding: 0 6px;
+  }
+  .mock-nav .icn { width: 6px; height: 6px; border-radius: 999px; background: #6F7480; opacity: 0.5; }
+  .mock-nav .icn.act { background: #1E2B4D; opacity: 1; width: 14px; }
+
+  /* Right side — token swatches */
+  .grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  .sw {
+    display: grid; grid-template-columns: 56px 1fr; gap: 12px; align-items: center;
+  }
+  .sw .chip {
+    width: 56px; height: 56px; border-radius: 12px;
+    border: 1px solid var(--divider);
+  }
+  .sw .meta { display: flex; flex-direction: column; gap: 2px; }
+  .sw .role {
+    font: 600 10px/1 var(--font-sans); color: var(--text-2);
+    letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .sw .name { font: 600 14px/1.15 var(--font-sans); color: var(--text-1); }
+  .sw .hex { font-family: var(--font-mono); font-size: 11px; color: var(--text-2); }
+
+  .layout {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="header">
+    <div class="pname">Snoop palette</div>
+    <div class="ptag">data-palette="snoop"</div>
+  </div>
+
+  <div class="layout">
+    <!-- Mock screen showing the new arrangement in context -->
+    <div class="mock">
+      <div class="mock-top">
+        <span class="mock-title">Saved</span>
+        <span class="mock-bell"></span>
+      </div>
+      <div class="mock-card">
+        <div class="mock-thumb"></div>
+        <div class="mock-meta">
+          <div class="mock-line1">Sony WH-1000XM5</div>
+          <div class="mock-line2">Best Buy</div>
+          <div class="mock-price">$249.00</div>
+        </div>
+      </div>
+      <div class="mock-card">
+        <div class="mock-thumb" style="background:linear-gradient(135deg,#FFEBCC,#FFF9D2)"></div>
+        <div class="mock-meta">
+          <div class="mock-line1">LEGO Botanical Roses</div>
+          <div class="mock-line2">LEGO</div>
+          <div class="mock-price">$54.99</div>
+        </div>
+      </div>
+      <div class="mock-nav">
+        <span class="icn act"></span>
+        <span class="icn"></span>
+        <span class="icn"></span>
+        <span class="icn"></span>
+        <span class="icn"></span>
+      </div>
+    </div>
+
+    <!-- Token list -->
+    <div class="grid">
+      <div class="sw">
+        <div class="chip" style="background:#FAFAF7"></div>
+        <div class="meta">
+          <div class="role">Page background</div>
+          <div class="name">Off-white</div>
+          <div class="hex">#FAFAF7 — bg-1</div>
+        </div>
+      </div>
+      <div class="sw">
+        <div class="chip" style="background:#FFF9D2"></div>
+        <div class="meta">
+          <div class="role">Card / nav surface</div>
+          <div class="name">Yellow cream</div>
+          <div class="hex">#FFF9D2 — surface</div>
+        </div>
+      </div>
+      <div class="sw">
+        <div class="chip" style="background:#FFEBCC"></div>
+        <div class="meta">
+          <div class="role">Chips / soft surface</div>
+          <div class="name">Peach</div>
+          <div class="hex">#FFEBCC — bg-2</div>
+        </div>
+      </div>
+      <div class="sw">
+        <div class="chip" style="background:#BFDDF0"></div>
+        <div class="meta">
+          <div class="role">Secondary accent</div>
+          <div class="name">Light blue</div>
+          <div class="hex">#BFDDF0 — secondary</div>
+        </div>
+      </div>
+      <div class="sw">
+        <div class="chip" style="background:#8CC0EB"></div>
+        <div class="meta">
+          <div class="role">Primary accent</div>
+          <div class="name">Blue</div>
+          <div class="hex">#8CC0EB — accent</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body></html>

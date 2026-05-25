@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(npm *)",
+      "Bash(git *)",
+      "Bash(Get-ChildItem -Path \"D:\\\\Mazen\\\\Uni\\\\GraduationProject\\\\frontend_repo\" -Force)",
+      "Bash(Select-Object -Property Name, FullName)",
+      "Bash(Format-Table -AutoSize)",
+      "PowerShell(Get-ChildItem -Path \"D:\\\\Mazen\\\\Uni\\\\GraduationProject\\\\frontend_repo\" -Recurse -Force | Where-Object { $_.PSIsContainer -eq $false } | Select-Object -Property FullName | ConvertTo-Json)",
+      "PowerShell(Get-ChildItem -Path \"D:\\\\Mazen\\\\Uni\\\\GraduationProject\\\\frontend_repo\\\\assets\" -Recurse | Where-Object { $_.PSIsContainer -eq $false } | Select-Object -Property Name, FullName)",
+      "PowerShell(Get-ChildItem -Path \"D:\\\\Mazen\\\\Uni\\\\GraduationProject\\\\frontend_repo\\\\ui_kits\" -Recurse | Where-Object { $_.PSIsContainer -eq $false } | Select-Object -Property Name, FullName)",
+      "Bash(npm --version)"
+    ]
+  },
+  "enabledPlugins": {
+    "bencium-controlled-ux-designer@bencium-marketplace": true,
+    "bencium-impact-designer@bencium-marketplace": true,
+    "design-audit@bencium-marketplace": true
+  }
+}

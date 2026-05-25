@@ -1,0 +1,11 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" role="img" aria-label="Snoop monogram">
+  <rect width="80" height="80" rx="20" fill="var(--bg-2, #FFEBCC)"></rect>
+  <text x="40" y="58" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, &#39;SF Pro Display&#39;, sans-serif" font-weight="700" font-size="52" letter-spacing="-0.04em" fill="var(--text-1, #1E2B4D)">S</text>
+  <g transform="translate(50 10)" fill="var(--accent, #8CC0EB)">
+    <ellipse cx="3" cy="4" rx="2" ry="2.6"></ellipse>
+    <ellipse cx="9" cy="2" rx="2" ry="2.6"></ellipse>
+    <ellipse cx="15" cy="4" rx="2" ry="2.6"></ellipse>
+    <path d="M4 9 C 4 13, 14 13, 14 9 C 14 6, 11 5, 9 5 C 7 5, 4 6, 4 9 Z"></path>
+  </g>
+</svg>

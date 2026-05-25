@@ -1,0 +1,257 @@
+/* =============================================================================
+   SNOOP — Colors & Type
+   =============================================================================
+   Brand palette is a single, warm, friendly system:
+     yellow cream  · #FFF9D2   (page background)
+     peach         · #FFEBCC   (card surfaces)
+     light blue    · #BFDDF0   (chips, soft accents)
+     blue          · #8CC0EB   (primary accent — CTAs, links, active states)
+
+   Apply with [data-palette] on any ancestor — `snoop` is the default; the
+   other names are kept around as alternate themes if you want to A/B.
+   ========================================================================== */
+
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap");
+
+/* ---------- Base / shared tokens ---------- */
+:root {
+  /* Spacing — 4pt grid */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* Radii */
+  --radius-chip: 8px;
+  --radius-compact: 12px;
+  --radius-card: 16px;
+  --radius-nav: 24px;
+  --radius-pill: 999px;
+
+  /* Touch targets */
+  --tap-min: 44px;
+
+  /* Type scale — SF Pro */
+  --type-display: 34px;
+  --type-title1: 28px;
+  --type-title2: 22px;
+  --type-title3: 20px;
+  --type-headline: 17px;
+  --type-body: 17px;
+  --type-callout: 16px;
+  --type-subhead: 15px;
+  --type-footnote: 13px;
+  --type-caption: 12px;
+
+  /* Type scale — IBM Plex Mono (prices) */
+  --price-hero: 22px;
+  --price-list: 17px;
+  --price-table: 15px;
+  --price-range: 13px;
+  --price-strike: 13px;
+  --price-detail-hero: 28px;
+
+  /* Font stacks */
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+               "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* Line heights */
+  --lh-tight: 1.15;
+  --lh-snug: 1.3;
+  --lh-normal: 1.45;
+  --lh-relaxed: 1.6;
+
+  /* Letter spacing */
+  --tracking-display: -0.022em;
+  --tracking-title: -0.018em;
+  --tracking-body: -0.005em;
+  --tracking-mono: 0;
+
+  /* Weights */
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+}
+
+/* ---------- Snoop palette (default) ----------
+   The full system uses these colors. They cascade from :root, so every
+   component picks them up automatically.
+
+   Layered surface model:
+     --bg-1     off-white page background (neutral ground)
+     --bg-2     peach (chips, search default, top-bar buttons — small surfaces)
+     --surface  yellow cream (primary card / sheet / floating nav background)
+*/
+:root,
+[data-palette="snoop"] {
+  --palette-name: "Snoop";
+  --bg-1: #FAFAF7;
+  --bg-2: #FFEBCC;
+  --surface: #FFF9D2;
+  --accent: #8CC0EB;
+  --accent-deep: #4A90C7;          /* deeper variant for focus rings */
+  --accent-ink: #1E2B4D;
+  --accent-soft: rgba(140, 192, 235, 0.28);
+  --savings: #3FA66B;
+  --secondary-accent: #BFDDF0;
+  --secondary-soft: rgba(191, 221, 240, 0.50);
+  --text-1: #1E2B4D;
+  --text-2: #6F7480;
+  --divider: #EAE6D8;
+  --error: #E07A5F;
+  --character: #FFFFFF;
+  --character-ink: #1E2B4D;
+  --shadow-rgb: 30, 43, 77;
+}
+
+/* ---------- Alternate themes (preserved for A/B) ---------- */
+[data-palette="clear-sky"] {
+  --palette-name: "Clear Sky";
+  --bg-1: #F5F8FF; --bg-2: #EEF3FF;
+  --accent: #3B82F6; --accent-deep: #1D4ED8; --accent-ink: #ffffff;
+  --accent-soft: rgba(59, 130, 246, 0.12);
+  --savings: #22C55E;
+  --secondary-accent: #A78BFA; --secondary-soft: rgba(167, 139, 250, 0.14);
+  --text-1: #1C1C1E; --text-2: #6B7280;
+  --divider: #E2E8F0; --error: #F87171;
+  --character: #BAE6FD; --character-ink: #1C4E80;
+  --shadow-rgb: 59, 130, 246;
+}
+[data-palette="warm-linen"] {
+  --palette-name: "Warm Linen";
+  --bg-1: #FAFAF7; --bg-2: #F3F0EB;
+  --accent: #2563EB; --accent-deep: #1E40AF; --accent-ink: #ffffff;
+  --accent-soft: rgba(37, 99, 235, 0.12);
+  --savings: #4ADE80;
+  --secondary-accent: #F59E0B; --secondary-soft: rgba(245, 158, 11, 0.16);
+  --text-1: #1A1A18; --text-2: #78716C;
+  --divider: #E7E5E0; --error: #FB923C;
+  --character: #FDBA74; --character-ink: #8A3F0A;
+  --shadow-rgb: 37, 99, 235;
+}
+[data-palette="mint-focus"] {
+  --palette-name: "Mint Focus";
+  --bg-1: #F0FDF9; --bg-2: #DCFCE7;
+  --accent: #576A8F; --accent-deep: #2F3F5E; --accent-ink: #ffffff;
+  --accent-soft: rgba(87, 106, 143, 0.14);
+  --savings: #10B981;
+  --secondary-accent: #BBC9E0; --secondary-soft: rgba(187, 201, 224, 0.30);
+  --text-1: #1E293B; --text-2: #64748B;
+  --divider: #D1FAE5; --error: #FB7185;
+  --character: #FFFFFF; --character-ink: #1E2B4D;
+  --shadow-rgb: 87, 106, 143;
+}
+[data-palette="violet-calm"] {
+  --palette-name: "Violet Calm";
+  --bg-1: #FAF5FF; --bg-2: #F3E8FF;
+  --accent: #4F46E5; --accent-deep: #3730A3; --accent-ink: #ffffff;
+  --accent-soft: rgba(79, 70, 229, 0.14);
+  --savings: #34D399;
+  --secondary-accent: #F9A8D4; --secondary-soft: rgba(249, 168, 212, 0.22);
+  --text-1: #1E1B4B; --text-2: #6D6D8F;
+  --divider: #E9D5FF; --error: #F43F5E;
+  --character: #C4B5FD; --character-ink: #3B2D8A;
+  --shadow-rgb: 79, 70, 229;
+}
+
+/* ---------- Shadow system (palette-tinted) ---------- */
+:root {
+  --shadow-rest: 0 1px 2px rgba(var(--shadow-rgb), 0.06),
+                 0 1px 1px rgba(var(--shadow-rgb), 0.04);
+  --shadow-card: 0 2px 8px rgba(var(--shadow-rgb), 0.08);
+  --shadow-floating: 0 8px 24px rgba(var(--shadow-rgb), 0.12);
+  --shadow-cta: 0 6px 18px rgba(var(--shadow-rgb), 0.22);
+}
+
+/* ============================================================================
+   Semantic typography classes
+   ============================================================================ */
+.t-display {
+  font: var(--weight-bold) var(--type-display) / var(--lh-tight) var(--font-sans);
+  letter-spacing: var(--tracking-display); color: var(--text-1);
+}
+.t-title1 {
+  font: var(--weight-bold) var(--type-title1) / var(--lh-tight) var(--font-sans);
+  letter-spacing: var(--tracking-title); color: var(--text-1);
+}
+.t-title2 {
+  font: var(--weight-semibold) var(--type-title2) / var(--lh-snug) var(--font-sans);
+  letter-spacing: var(--tracking-title); color: var(--text-1);
+}
+.t-title3 {
+  font: var(--weight-semibold) var(--type-title3) / var(--lh-snug) var(--font-sans);
+  letter-spacing: var(--tracking-title); color: var(--text-1);
+}
+.t-headline {
+  font: var(--weight-semibold) var(--type-headline) / var(--lh-snug) var(--font-sans);
+  letter-spacing: var(--tracking-body); color: var(--text-1);
+}
+.t-body {
+  font: var(--weight-regular) var(--type-body) / var(--lh-normal) var(--font-sans);
+  letter-spacing: var(--tracking-body); color: var(--text-1);
+}
+.t-callout {
+  font: var(--weight-regular) var(--type-callout) / var(--lh-normal) var(--font-sans);
+  color: var(--text-1);
+}
+.t-subhead {
+  font: var(--weight-regular) var(--type-subhead) / var(--lh-normal) var(--font-sans);
+  color: var(--text-2);
+}
+.t-footnote {
+  font: var(--weight-regular) var(--type-footnote) / var(--lh-normal) var(--font-sans);
+  color: var(--text-2);
+}
+.t-caption {
+  font: var(--weight-regular) var(--type-caption) / var(--lh-normal) var(--font-sans);
+  color: var(--text-2);
+}
+
+/* ---- Prices: IBM Plex Mono ---- */
+.p-hero {
+  font: var(--weight-semibold) var(--price-hero) / 1.1 var(--font-mono);
+  color: var(--savings); letter-spacing: var(--tracking-mono);
+  font-variant-numeric: tabular-nums;
+}
+.p-detail-hero {
+  font: var(--weight-semibold) var(--price-detail-hero) / 1.05 var(--font-mono);
+  color: var(--savings); font-variant-numeric: tabular-nums;
+}
+.p-list {
+  font: var(--weight-regular) var(--price-list) / 1.2 var(--font-mono);
+  color: var(--text-1); font-variant-numeric: tabular-nums;
+}
+.p-table {
+  font: var(--weight-regular) var(--price-table) / 1.2 var(--font-mono);
+  color: var(--text-1); font-variant-numeric: tabular-nums;
+}
+.p-range {
+  font: var(--weight-regular) var(--price-range) / 1.25 var(--font-mono);
+  color: var(--text-2); font-variant-numeric: tabular-nums;
+}
+.p-strike {
+  font: var(--weight-regular) var(--price-strike) / 1.25 var(--font-mono);
+  color: var(--text-2); text-decoration: line-through;
+  font-variant-numeric: tabular-nums;
+}
+
+.text-secondary { color: var(--text-2); }
+.text-accent    { color: var(--accent); }
+.text-savings   { color: var(--savings); }
+.text-error     { color: var(--error); }
+
+html, body {
+  margin: 0; padding: 0;
+  background: var(--bg-1); color: var(--text-1);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+* { box-sizing: border-box; }

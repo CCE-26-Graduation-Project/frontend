@@ -1,0 +1,66 @@
+<!doctype html>
+<html data-palette="snoop">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="_shared.css">
+<style>
+  .group { display: flex; flex-direction: column; gap: 10px; }
+  .label { font: 600 11px/1.2 var(--font-sans); color: var(--text-2); letter-spacing: 0.08em; text-transform: uppercase; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+  .chip-recent {
+    display: inline-flex; align-items: center; gap: 6px;
+    height: 36px; padding: 0 12px; border-radius: 999px;
+    background: var(--bg-2); color: var(--text-1);
+    font: 400 14px/1 var(--font-sans);
+  }
+  .chip-recent svg { width: 14px; height: 14px; stroke: var(--text-2); stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .chip-recent .x { color: var(--text-2); font-size: 16px; opacity: .6; }
+
+  /* Category — navy pill with cream text (was blue accent before) */
+  .chip-cat {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 12px 6px 6px; border-radius: 999px;
+    background: var(--text-1); color: #FFF9D2;
+    font: 600 13px/1 var(--font-sans);
+  }
+  .chip-cat .ic {
+    width: 24px; height: 24px; border-radius: 999px;
+    background: #FFF9D2; color: var(--text-1);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+  }
+  .chip-tag {
+    display: inline-flex; padding: 4px 10px; border-radius: 8px;
+    background: var(--bg-2); color: var(--text-1);
+    font: 600 12px/1.2 var(--font-sans);
+  }
+  .chip-deal {
+    display: inline-flex; padding: 4px 10px; border-radius: 8px;
+    background: var(--savings); color: white;
+    font: 600 12px/1.2 var(--font-sans);
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="group">
+    <div class="label">Recent search chips</div>
+    <div class="row">
+      <span class="chip-recent"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>iPhone 15 Pro<span class="x">×</span></span>
+      <span class="chip-recent"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Sony headphones<span class="x">×</span></span>
+      <span class="chip-recent"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Coffee table<span class="x">×</span></span>
+    </div>
+  </div>
+  <div class="group">
+    <div class="label">Category & tag badges</div>
+    <div class="row">
+      <span class="chip-cat"><span class="ic">E</span>Electronics</span>
+      <span class="chip-cat"><span class="ic">F</span>Fashion</span>
+      <span class="chip-tag">Verified store</span>
+      <span class="chip-tag">New release</span>
+      <span class="chip-deal">Lowest price</span>
+    </div>
+  </div>
+</div>
+</body></html>

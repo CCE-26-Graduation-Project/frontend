@@ -1,0 +1,153 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Snoop — all screens</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html, body {
+    margin: 0; padding: 0; min-height: 100vh;
+    background: var(--bg-1);
+    background-image:
+      radial-gradient(circle at 10% 0%, rgba(255,235,204,0.6) 0%, transparent 60%),
+      radial-gradient(circle at 95% 100%, rgba(191,221,240,0.45) 0%, transparent 55%);
+    font-family: var(--font-sans);
+    color: var(--text-1);
+    -webkit-font-smoothing: antialiased;
+  }
+  .hero {
+    padding: 64px 40px 16px; max-width: 1400px; margin: 0 auto;
+    display: flex; gap: 32px; align-items: center; justify-content: space-between; flex-wrap: wrap;
+  }
+  .hero-text { max-width: 720px; }
+  .hero h1 {
+    margin: 0; font: 700 52px/1.05 var(--font-sans);
+    letter-spacing: -0.028em;
+  }
+  .hero p {
+    max-width: 600px; margin: 14px 0 0;
+    font: 400 17px/1.5 var(--font-sans); color: var(--text-1); opacity: 0.7;
+  }
+  .hero .paws {
+    width: 88px; height: 56px;
+  }
+  .screen-row {
+    padding: 56px 40px 0;
+    max-width: 1400px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 64px 40px; align-items: start;
+  }
+  .frame-block { display: flex; flex-direction: column; gap: 16px; }
+  .frame-block .heading {
+    display: flex; align-items: baseline; gap: 12px;
+  }
+  .frame-block .num {
+    font-family: var(--font-mono); font-size: 13px;
+    color: var(--text-2); letter-spacing: 0.04em;
+    background: rgba(30, 43, 77, 0.06); padding: 4px 10px;
+    border-radius: 999px;
+  }
+  .frame-block h2 {
+    margin: 0; font: 700 24px/1.1 var(--font-sans);
+    letter-spacing: -0.022em;
+  }
+  .frame-block .desc {
+    margin: 0; font: 400 14px/1.45 var(--font-sans);
+    color: var(--text-2);
+  }
+  .phone-wrap {
+    display: flex; justify-content: center;
+    margin-top: 8px;
+  }
+  .phone {
+    transform: scale(0.88); transform-origin: top center;
+    margin-bottom: -120px;
+  }
+  footer {
+    padding: 100px 40px 60px; max-width: 1000px; margin: 0 auto;
+    color: var(--text-2); font: 400 13px/1.5 var(--font-sans);
+    text-align: center;
+  }
+  @keyframes snoop-pulse {
+    0%, 60%, 100% { transform: translateX(-50%) scale(1); }
+    8% { transform: translateX(-50%) scale(1.06); }
+    16% { transform: translateX(-50%) scale(1); }
+  }
+  @keyframes snoop-bounce {
+    0%, 80%, 100% { opacity: 0.3; transform: translateY(0); }
+    40% { opacity: 1; transform: translateY(-6px); }
+  }
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="hero-text">
+    <h1>Snoop · all screens</h1>
+    <p>Every core screen, side-by-side. Same components, same data, same warm palette. Tap through them on the interactive UI kit page; this view is for a single glance at the whole product.</p>
+  </div>
+  <svg class="paws" viewBox="0 0 84 56" fill="var(--accent)">
+    <ellipse cx="12" cy="28" rx="6" ry="8"/>
+    <ellipse cx="28" cy="18" rx="6" ry="8"/>
+    <ellipse cx="44" cy="18" rx="6" ry="8"/>
+    <ellipse cx="60" cy="28" rx="6" ry="8"/>
+    <path d="M14 42 C 14 54, 58 54, 58 42 C 58 32, 50 30, 36 30 C 22 30, 14 32, 14 42 Z"/>
+  </svg>
+</div>
+
+<div id="root" class="screen-row"></div>
+
+<footer>Snoop Design System · all 10 screens · open the iOS UI kit for the interactive prototype.</footer>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="../ui_kits/ios_app/ios-frame.jsx"></script>
+<script type="text/babel" src="../ui_kits/ios_app/Snoop.jsx"></script>
+<script type="text/babel" src="../ui_kits/ios_app/components.jsx"></script>
+<script type="text/babel" src="../ui_kits/ios_app/screens.jsx"></script>
+
+<script type="text/babel">
+  const SCREENS = [
+    { id: "home", label: "Home", desc: "Greeting · search · trending · categories. Snoop waves on first load.",
+      render: () => <HomeScreen palette="snoop" /> },
+    { id: "search", label: "Search active", desc: "Full-screen overlay with live suggestions and typo correction.",
+      render: () => <SearchActiveScreen palette="snoop" /> },
+    { id: "results-grid", label: "Results · grid", desc: "Default for fashion / furniture. Discount badge + lowest price.",
+      render: () => <ResultsGridScreen palette="snoop" /> },
+    { id: "results-list", label: "Results · list", desc: "Default for electronics / appliances. Range + top 3 stores.",
+      render: () => <ResultsListScreen palette="snoop" /> },
+    { id: "detail", label: "Product detail", desc: "Sticky CTA over floating nav; vertical Compare pill always visible.",
+      render: () => <ProductDetailScreen palette="snoop" /> },
+    { id: "compare", label: "Comparison sheet", desc: "Bottom sheet over detail. Lowest price row highlighted in savings.",
+      render: () => <ProductDetailScreen palette="snoop" withSheet={true} /> },
+    { id: "saved", label: "Saved", desc: "Bookmarked products. Same card vocabulary as results.",
+      render: () => <SavedScreen palette="snoop" /> },
+    { id: "alerts", label: "Alerts", desc: "Unread row in bg-2; Snoop's expression matches the message tone.",
+      render: () => <NotificationsScreen palette="snoop" /> },
+    { id: "no-results", label: "No results", desc: "Soft error — surprised Snoop, never a red banner.",
+      render: () => <NoResultsScreen palette="snoop" /> },
+    { id: "loading", label: "Loading", desc: "Skeleton cards + thinking Snoop. No spinner anywhere.",
+      render: () => <LoadingScreen palette="snoop" /> },
+  ];
+
+  function App() {
+    return SCREENS.map((s, i) => (
+      <div className="frame-block" key={s.id}>
+        <div className="heading">
+          <span className="num">{String(i + 1).padStart(2, "0")}</span>
+          <h2>{s.label}</h2>
+        </div>
+        <p className="desc">{s.desc}</p>
+        <div className="phone-wrap">
+          <div className="phone">
+            <IOSDevice width={402} height={874}>
+              {s.render()}
+            </IOSDevice>
+          </div>
+        </div>
+      </div>
+    ));
+  }
+
+  ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body></html>

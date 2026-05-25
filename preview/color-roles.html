@@ -1,0 +1,43 @@
+<!doctype html>
+<html data-palette="clear-sky">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="_shared.css">
+<style>
+  .row-roles { display: grid; grid-template-columns: 96px 1fr 1fr; align-items: center; gap: 14px 18px; }
+  .role-key { font: 600 12px/1.2 var(--font-sans); color: var(--text-1); }
+  .role-desc { font: 400 12.5px/1.4 var(--font-sans); color: var(--text-2); }
+  .role-chip { height: 28px; border-radius: 8px; }
+  .heading { font: 700 18px/1.2 var(--font-sans); letter-spacing: -0.018em; color: var(--text-1); }
+  .subheading { font: 400 12.5px/1.4 var(--font-sans); color: var(--text-2); margin-top: 2px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div>
+    <div class="heading">Semantic color roles</div>
+    <div class="subheading">Every color in the system maps to one of these slots. Hue changes per palette; role never does.</div>
+  </div>
+  <div class="row-roles">
+    <div class="role-chip" style="background:var(--accent)"></div>
+    <div class="role-key">--accent</div>
+    <div class="role-desc">Subtle accent — image gradients, search focus ring, camera idle pulse. Brand foreground uses navy + cream instead.</div>
+
+    <div class="role-chip" style="background:var(--savings)"></div>
+    <div class="role-key">--savings</div>
+    <div class="role-desc">Lowest price found. Used <em>only</em> on prices — never as a CTA fill.</div>
+
+    <div class="role-chip" style="background:var(--secondary-accent)"></div>
+    <div class="role-key">--secondary-accent</div>
+    <div class="role-desc">Light-blue chip for tags and soft secondary surfaces.</div>
+
+    <div class="role-chip" style="background:var(--error)"></div>
+    <div class="role-key">--error</div>
+    <div class="role-desc">Soft, never aggressive. Warnings + destructive states.</div>
+
+    <div class="role-chip" style="background:var(--character)"></div>
+    <div class="role-key">--character</div>
+    <div class="role-desc">Body fill of Snoop the mascot. Adapts to the palette automatically.</div>
+  </div>
+</div>
+</body></html>

@@ -1,0 +1,14 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 96" role="img" aria-label="Snoop">
+  <defs>
+    
+  </defs>
+  <text class="wm" x="0" y="68">Snoop</text>
+  
+  <g transform="translate(168 14)" fill="var(--accent, #8CC0EB)">
+    <ellipse cx="10" cy="10" rx="3.5" ry="4.5"></ellipse>
+    <ellipse cx="20" cy="6" rx="3.5" ry="4.5"></ellipse>
+    <ellipse cx="30" cy="10" rx="3.5" ry="4.5"></ellipse>
+    <path d="M11 17 C 11 23, 29 23, 29 17 C 29 12, 25 11, 20 11 C 15 11, 11 12, 11 17 Z"></path>
+  </g>
+</svg>

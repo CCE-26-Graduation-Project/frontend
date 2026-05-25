@@ -1,0 +1,109 @@
+<!doctype html>
+<html data-palette="clear-sky">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="_shared.css">
+<style>
+  body { padding: 32px 24px; }
+  .row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+  .group { display: flex; flex-direction: column; gap: 12px; }
+  .label { font: 600 11px/1.2 var(--font-sans); color: var(--text-2); letter-spacing: 0.08em; text-transform: uppercase; }
+
+  /* PREMIUM PRIMARY — dark, popped, layered shadow */
+  .btn-primary {
+    --btn-bg: var(--text-1);
+    --btn-rgb: 28, 28, 30;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    height: 54px; padding: 0 28px; border-radius: 999px;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0) 60%),
+      var(--btn-bg);
+    color: white;
+    font: 600 17px/1 var(--font-sans); letter-spacing: -0.01em;
+    border: none; cursor: pointer; position: relative;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.18) inset,           /* top highlight rim */
+      0 -1px 0 rgba(0,0,0,0.25) inset,                /* bottom dark rim */
+      0 1px 2px rgba(var(--btn-rgb), 0.20),
+      0 6px 14px rgba(var(--btn-rgb), 0.28),
+      0 18px 34px rgba(var(--btn-rgb), 0.30);
+  }
+  .btn-primary svg { width: 18px; height: 18px; }
+  .btn-primary .arrow {
+    width: 22px; height: 22px; border-radius: 999px;
+    background: rgba(255,255,255,0.18);
+    display: inline-flex; align-items: center; justify-content: center; margin-left: 4px;
+  }
+
+  /* SECONDARY — outlined, refined */
+  .btn-secondary {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    height: 48px; padding: 0 22px; border-radius: 999px;
+    background: #fff; color: var(--text-1);
+    font: 600 15px/1 var(--font-sans); letter-spacing: -0.005em;
+    border: 1px solid var(--divider);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 4px 10px rgba(0,0,0,0.03);
+    cursor: pointer;
+  }
+  .btn-secondary-added {
+    background: var(--text-1); color: white; border-color: transparent;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.10), 0 6px 14px rgba(0,0,0,0.12);
+  }
+
+  /* ICON */
+  .btn-icon {
+    width: 48px; height: 48px; border-radius: 999px;
+    background: #fff; color: var(--text-1);
+    border: 1px solid var(--divider);
+    display: inline-flex; align-items: center; justify-content: center;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 4px 10px rgba(0,0,0,0.03);
+    cursor: pointer;
+  }
+  .btn-icon svg { width: 20px; height: 20px; }
+  .btn-icon.filled { background: var(--text-1); color: white; border-color: transparent;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.10), 0 6px 14px rgba(0,0,0,0.12); }
+
+  /* PRESSED — shows the active state of primary */
+  .btn-primary.pressed {
+    transform: translateY(1px) scale(0.985);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.12) inset,
+      0 -1px 0 rgba(0,0,0,0.30) inset,
+      0 1px 2px rgba(var(--btn-rgb), 0.20),
+      0 3px 8px rgba(var(--btn-rgb), 0.22);
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="group">
+    <div class="label">Primary — "Go to store"</div>
+    <div class="row">
+      <button class="btn-primary">
+        Go to store
+        <span class="arrow"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
+      </button>
+      <button class="btn-primary pressed">
+        Go to store
+        <span class="arrow"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
+      </button>
+    </div>
+  </div>
+  <div class="group">
+    <div class="label">Secondary + icon</div>
+    <div class="row">
+      <button class="btn-secondary">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+        Add to comparison
+      </button>
+      <button class="btn-secondary btn-secondary-added">Added ✓</button>
+      <button class="btn-icon" aria-label="Save">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+      </button>
+      <button class="btn-icon filled" aria-label="Saved">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+</body></html>

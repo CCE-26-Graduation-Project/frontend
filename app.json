@@ -1,0 +1,34 @@
+{
+  "expo": {
+    "name": "Snoop",
+    "slug": "snoop",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "snoop",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#FAFAF7"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.snoop.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#FAFAF7"
+      },
+      "package": "com.snoop.app"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-asset"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

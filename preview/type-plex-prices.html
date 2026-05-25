@@ -1,0 +1,25 @@
+<!doctype html>
+<html data-palette="clear-sky">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="_shared.css">
+<style>
+  .stack { display: grid; gap: 16px; }
+  .specimen { display: grid; grid-template-columns: 150px 1fr; align-items: baseline; gap: 16px; }
+  .tag { font: 600 11px/1.2 var(--font-mono); color: var(--text-2); }
+  .note { font: 400 12.5px/1.45 var(--font-sans); color: var(--text-2); }
+  .row { display: flex; align-items: baseline; gap: 16px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="note">IBM Plex Mono is used <strong>exclusively</strong> for prices. Tabular figures keep columns aligned for at-a-glance comparison.</div>
+  <div class="stack">
+    <div class="specimen"><div class="tag">DETAIL HERO · 28/Semi</div><div class="p-detail-hero">$249.00</div></div>
+    <div class="specimen"><div class="tag">LIST HERO · 22/Semi</div><div class="p-hero">$129.99</div></div>
+    <div class="specimen"><div class="tag">LIST PRICE · 17/Reg</div><div class="p-list">$149.99</div></div>
+    <div class="specimen"><div class="tag">TABLE · 15/Reg</div><div class="p-table">$152.40</div></div>
+    <div class="specimen"><div class="tag">RANGE · 13/Reg</div><div class="row"><span class="p-range">up to $899.00</span><span class="p-strike">$179.99</span></div></div>
+  </div>
+</div>
+</body></html>

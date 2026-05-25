@@ -1,0 +1,58 @@
+/* Shared card scaffold for preview/*.html
+   Cards render at 700×<H>px inside the Design System tab. */
+
+@import url("../colors_and_type.css");
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  font-family: var(--font-sans);
+  color: var(--text-1);
+  -webkit-font-smoothing: antialiased;
+}
+* { box-sizing: border-box; }
+
+.card {
+  width: 700px;
+  padding: 24px;
+  background: var(--bg-1);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.card.compact { padding: 20px 24px; }
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font: 600 11px/1.2 var(--font-sans);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+
+.swatch {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+.swatch-sm { width: 40px; height: 40px; border-radius: 8px; flex-shrink: 0; }
+
+.divider-line { height: 1px; background: var(--divider); width: 100%; }
+
+.code {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-2);
+}

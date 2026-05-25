@@ -1,0 +1,71 @@
+<!doctype html>
+<html data-palette="mint-focus">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="_shared.css">
+<style>
+  body { padding: 32px 24px; background: var(--bg-1); }
+  .stage {
+    position: relative; height: 180px; width: 100%;
+    background: var(--bg-1);
+    border-radius: 16px;
+  }
+  .navbar {
+    position: absolute; left: 16px; right: 16px; bottom: 24px;
+    height: 66px; border-radius: 26px;
+    background: #0D0B61;
+    box-shadow:
+      0 2px 4px rgba(13, 11, 97, 0.10),
+      0 14px 28px rgba(13, 11, 97, 0.24),
+      0 28px 56px rgba(13, 11, 97, 0.22);
+    display: grid; grid-template-columns: repeat(5, 1fr); align-items: center;
+    padding: 0 8px;
+  }
+  .tab {
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    color: rgba(255, 249, 210, 0.55); font: 500 10.5px/1 var(--font-sans);
+  }
+  .tab svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .tab.active { color: #FFF9D2; }
+  .cam-slot { position: relative; height: 100%; display: flex; align-items: center; justify-content: center; }
+  .cam {
+    position: absolute; bottom: 38px; left: 50%; transform: translateX(-50%);
+    width: 56px; height: 56px; border-radius: 999px; background: #FFF9D2;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 22px rgba(13, 11, 97, 0.40), 0 0 0 1px rgba(13, 11, 97, 0.08);
+    border: 4px solid var(--bg-1);
+  }
+  .cam svg { width: 22px; height: 22px; stroke: #0D0B61; fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+  .cam-label { color: rgba(255, 249, 210, 0.55); font: 500 10.5px/1 var(--font-sans); position: absolute; bottom: 14px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="stage">
+    <div class="navbar">
+      <div class="tab active">
+        <svg viewBox="0 0 24 24"><path d="m3 11 9-7 9 7v9a2 2 0 0 1-2 2h-4v-7h-6v7H5a2 2 0 0 1-2-2z"/></svg>
+        Home
+      </div>
+      <div class="tab">
+        <svg viewBox="0 0 24 24"><path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+        Saved
+      </div>
+      <div class="cam-slot">
+        <div class="cam">
+          <svg viewBox="0 0 24 24"><path d="M14.5 4h-5L8 6H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="4"/></svg>
+        </div>
+        <div class="cam-label">Camera</div>
+      </div>
+      <div class="tab">
+        <svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0v5l1.5 3h-15L6 13z"/><path d="M10 19a2 2 0 0 0 4 0"/></svg>
+        Alerts
+      </div>
+      <div class="tab">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+        Profile
+      </div>
+    </div>
+  </div>
+</div>
+</body></html>

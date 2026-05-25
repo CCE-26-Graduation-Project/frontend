@@ -1,0 +1,61 @@
+<!doctype html>
+<html data-palette="clear-sky">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="_shared.css">
+<style>
+  body { padding: 24px; }
+  .row { display: flex; gap: 24px; align-items: stretch; }
+  .pillgroup { display: flex; align-items: center; gap: 16px; }
+  .pill {
+    width: 40px; height: 110px; border-radius: 999px;
+    background: var(--accent); color: white;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    box-shadow: var(--shadow-cta);
+    font: 600 13px/1 var(--font-sans);
+    writing-mode: vertical-rl; transform: rotate(180deg);
+  }
+  .pill .num {
+    writing-mode: horizontal-tb; transform: rotate(0);
+    background: rgba(255,255,255,0.22); border-radius: 999px;
+    min-width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center;
+    font-family: var(--font-mono); font-weight: 600; padding: 0 6px;
+  }
+  .toast {
+    display: inline-flex; gap: 12px; align-items: center;
+    padding: 10px 14px 10px 10px; border-radius: 999px; background: var(--text-1); color: white;
+    box-shadow: var(--shadow-floating);
+    font: 500 14px/1.2 var(--font-sans);
+  }
+  .toast .dot {
+    width: 28px; height: 28px; border-radius: 999px; background: var(--savings);
+    display: inline-flex; align-items: center; justify-content: center; color: white;
+  }
+  .toast .dot svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+  .label { font: 600 11px/1.2 var(--font-sans); color: var(--text-2); letter-spacing: 0.08em; text-transform: uppercase; }
+  .col { display: flex; flex-direction: column; gap: 10px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="row">
+    <div class="col">
+      <div class="label">Compare pill</div>
+      <div class="pillgroup">
+        <div class="pill">Compare<span class="num">3</span></div>
+      </div>
+    </div>
+    <div class="col" style="flex:1">
+      <div class="label">Toasts</div>
+      <div class="toast">
+        <span class="dot"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-11"/></svg></span>
+        Saved to favourites
+      </div>
+      <div class="toast">
+        <span class="dot" style="background:var(--accent)"><svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
+        Redirecting you to Apple Store
+      </div>
+    </div>
+  </div>
+</div>
+</body></html>

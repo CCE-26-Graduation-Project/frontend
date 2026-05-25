@@ -1,0 +1,142 @@
+<!doctype html>
+<html data-palette="snoop">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="_shared.css">
+<style>
+  body { padding: 24px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  .product {
+    background: var(--surface); border-radius: 16px; overflow: hidden;
+    box-shadow: var(--shadow-card); display: flex; flex-direction: column;
+  }
+  .img {
+    aspect-ratio: 16/11; position: relative;
+    background: linear-gradient(135deg, var(--bg-2), color-mix(in oklab, var(--accent) 15%, var(--bg-2)));
+  }
+  .img .obj {
+    position: absolute; inset: 20% 22%; border-radius: 12px;
+    background: color-mix(in oklab, var(--accent) 35%, white);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.06);
+  }
+  /* Bookmark pill — saved state = navy with cream icon */
+  .bm {
+    position: absolute; top: 10px; right: 10px;
+    width: 32px; height: 32px; border-radius: 999px;
+    background: rgba(255, 249, 210, 0.92); backdrop-filter: blur(8px);
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    box-shadow: 0 1px 3px rgba(30,43,77,0.10);
+  }
+  .bm svg { width: 16px; height: 16px; fill: none; stroke: var(--text-1); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+  .bm.saved { background: var(--text-1); }
+  .bm.saved svg { fill: #FFF9D2; stroke: #FFF9D2; stroke-width: 0; }
+
+  /* Bottom-left "+" — quick add to comparison */
+  .plus {
+    position: absolute; bottom: 10px; left: 10px;
+    width: 30px; height: 30px; border-radius: 999px; border: none;
+    background: var(--text-1); color: #FFF9D2;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    box-shadow: 0 2px 6px rgba(30,43,77,0.30);
+  }
+  .plus svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
+
+  .badge-disc {
+    position: absolute; top: 10px; left: 10px;
+    height: 24px; padding: 0 9px; border-radius: 8px;
+    background: var(--savings); color: white;
+    font: 700 11px/1 var(--font-sans); letter-spacing: -0.005em;
+    display: inline-flex; align-items: center;
+  }
+
+  .body { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 6px; }
+
+  .store {
+    display: inline-flex; align-items: center; gap: 6px;
+    font: 500 12px/1 var(--font-sans); color: var(--text-2);
+  }
+  .store-logo {
+    width: 16px; height: 16px; border-radius: 4px;
+    background: var(--bg-2); color: var(--text-1);
+    font: 700 9px/1 var(--font-sans);
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+
+  .pname {
+    font: 600 15px/1.25 var(--font-sans); letter-spacing: -0.012em;
+    color: var(--text-1);
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    overflow: hidden; min-height: 38px;
+  }
+
+  .priceline { display: flex; align-items: baseline; gap: 8px; margin-top: 2px; }
+  .priceline .pmain {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-weight: 600; font-size: 19px; line-height: 1; color: var(--savings);
+    letter-spacing: -0.005em;
+  }
+  .priceline .pold {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-weight: 400; font-size: 12px; color: var(--text-2);
+    text-decoration: line-through;
+  }
+  .priceline .pct {
+    font: 700 11px/1 var(--font-sans); color: var(--savings);
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="row">
+    <!-- Card 1 — with discount, saved -->
+    <div class="product">
+      <div class="img">
+        <div class="obj"></div>
+        <span class="badge-disc">−24%</span>
+        <button class="plus" title="Add to comparison">
+          <svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+        </button>
+        <span class="bm saved" title="Saved">
+          <svg viewBox="0 0 24 24"><path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+        </span>
+      </div>
+      <div class="body">
+        <div class="store">
+          <span class="store-logo">BB</span>
+          Best Buy
+        </div>
+        <div class="pname">Sony WH-1000XM5 wireless headphones</div>
+        <div class="priceline">
+          <span class="pmain">$249.00</span>
+          <span class="pold">$329.00</span>
+          <span class="pct">−24%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2 — no discount, unsaved -->
+    <div class="product">
+      <div class="img" style="background:linear-gradient(135deg, var(--bg-2), color-mix(in oklab, var(--secondary-accent) 22%, var(--bg-2)))">
+        <div class="obj" style="background:color-mix(in oklab, var(--text-1) 70%, white)"></div>
+        <button class="plus" title="Add to comparison">
+          <svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+        </button>
+        <span class="bm" title="Save">
+          <svg viewBox="0 0 24 24"><path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+        </span>
+      </div>
+      <div class="body">
+        <div class="store">
+          <span class="store-logo">A</span>
+          Apple Store
+        </div>
+        <div class="pname">Apple iPhone 15 Pro 256GB</div>
+        <div class="priceline">
+          <span class="pmain">$999.00</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body></html>

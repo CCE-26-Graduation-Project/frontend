@@ -1,0 +1,169 @@
+<!doctype html>
+<html data-palette="clear-sky">
+<head>
+<meta charset="utf-8">
+<title>Snoop — iOS UI kit</title>
+<link rel="stylesheet" href="../../colors_and_type.css">
+<style>
+  html, body {
+    margin: 0; padding: 0; min-height: 100vh;
+    background: #1c1c1e;
+    background-image: radial-gradient(circle at 20% 0%, #2a2a2e 0%, #1c1c1e 60%);
+    font-family: var(--font-sans);
+    color: #f4f4f5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .stage {
+    min-height: 100vh; display: flex; flex-direction: column;
+    align-items: center; padding: 40px 20px 60px;
+    gap: 28px;
+  }
+  .header {
+    width: 100%; max-width: 1100px; display: flex;
+    align-items: flex-end; justify-content: space-between; gap: 24px;
+  }
+  .header h1 {
+    margin: 0; font: 700 36px/1.05 var(--font-sans);
+    letter-spacing: -0.024em; color: #fff;
+  }
+  .header p {
+    margin: 6px 0 0; max-width: 540px;
+    font: 400 15px/1.45 var(--font-sans); color: rgba(255,255,255,0.7);
+  }
+  .pal-switch {
+    display: inline-flex; padding: 4px; gap: 2px;
+    background: rgba(255,255,255,0.06); border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .pal-switch button {
+    height: 36px; padding: 0 14px; border: none; border-radius: 999px;
+    background: transparent; color: rgba(255,255,255,0.7);
+    font: 500 13px/1 var(--font-sans); cursor: pointer; letter-spacing: -0.005em;
+  }
+  .pal-switch button.active { background: #fff; color: #1c1c1e; font-weight: 600; }
+  .pal-switch button:hover:not(.active) { color: #fff; }
+
+  .screen-tabs {
+    display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;
+    max-width: 980px;
+  }
+  .screen-tabs button {
+    height: 34px; padding: 0 14px; border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 999px; background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.8);
+    font: 500 13px/1 var(--font-sans); cursor: pointer; letter-spacing: -0.005em;
+  }
+  .screen-tabs button.active { background: #fff; color: #1c1c1e; border-color: #fff; }
+  .screen-tabs button:hover:not(.active) { background: rgba(255,255,255,0.08); color: #fff; }
+
+  .device-stage { display: flex; justify-content: center; }
+
+  .caption {
+    font: 500 13px/1.45 var(--font-sans); color: rgba(255,255,255,0.55);
+    text-align: center; max-width: 480px;
+  }
+
+  @keyframes snoop-pulse {
+    0%, 60%, 100% { transform: translateX(-50%) scale(1); }
+    8% { transform: translateX(-50%) scale(1.06); }
+    16% { transform: translateX(-50%) scale(1); }
+  }
+  @keyframes snoop-bounce {
+    0%, 80%, 100% { opacity: 0.3; transform: translateY(0); }
+    40% { opacity: 1; transform: translateY(-6px); }
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="header">
+    <div>
+      <h1>Snoop · iOS UI kit</h1>
+      <p>Interactive prototype of every core screen.</p>
+    </div>
+    <div class="pal-switch" id="paletteSwitch"></div>
+  </div>
+  <div class="screen-tabs" id="screenTabs"></div>
+  <div class="device-stage" id="deviceStage"></div>
+  <div class="caption" id="caption"></div>
+</div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="Snoop.jsx"></script>
+<script type="text/babel" src="components.jsx"></script>
+<script type="text/babel" src="screens.jsx"></script>
+
+<script type="text/babel">
+  const PALETTES = [
+    { id: "snoop", name: "Snoop" },
+    { id: "clear-sky", name: "Clear Sky" },
+    { id: "warm-linen", name: "Warm Linen" },
+    { id: "mint-focus", name: "Mint Focus" },
+    { id: "violet-calm", name: "Violet Calm" },
+  ];
+
+  const SCREENS = [
+    { id: "home", label: "Home", cap: "Greeting · search · trending · categories",
+      render: (p) => <HomeScreen palette={p} /> },
+    { id: "search", label: "Search", cap: "Full-screen overlay with live suggestions and typo handling.",
+      render: (p) => <SearchActiveScreen palette={p} /> },
+    { id: "results-grid", label: "Results · grid", cap: "Default for fashion / furniture categories.",
+      render: (p) => <ResultsGridScreen palette={p} /> },
+    { id: "results-list", label: "Results · list", cap: "Default for electronics / appliances. Range bar shows price spread.",
+      render: (p) => <ResultsListScreen palette={p} /> },
+    { id: "detail", label: "Product detail", cap: "Sticky CTA bar over floating nav; vertical Compare pill stays visible.",
+      render: (p) => <ProductDetailScreen palette={p} /> },
+    { id: "compare", label: "Comparison sheet", cap: "Bottom sheet over the detail page. Lowest price highlighted in savings color.",
+      render: (p) => <ProductDetailScreen palette={p} withSheet={true} /> },
+    { id: "saved", label: "Saved", cap: "Same product card vocabulary as results; bookmark icon filled in accent.",
+      render: (p) => <SavedScreen palette={p} /> },
+    { id: "alerts", label: "Alerts", cap: "Snoop's expression matches the notification's emotional content.",
+      render: (p) => <NotificationsScreen palette={p} /> },
+    { id: "no-results", label: "No results", cap: "Soft error state with the character — never a red banner.",
+      render: (p) => <NoResultsScreen palette={p} /> },
+    { id: "loading", label: "Loading", cap: "Skeleton rows + thinking character. No spinner anywhere in the system.",
+      render: (p) => <LoadingScreen palette={p} /> },
+  ];
+
+  function App() {
+    const [palette, setPalette] = React.useState("snoop");
+    const [screen, setScreen] = React.useState("home");
+    const cur = SCREENS.find(s => s.id === screen);
+
+    React.useEffect(() => {
+      // expose for embeds
+      window.__snoopState = { palette, screen };
+    }, [palette, screen]);
+
+    return (
+      <>
+        {ReactDOM.createPortal(
+          PALETTES.map(p => (
+            <button key={p.id} className={p.id === palette ? "active" : ""}
+              onClick={() => setPalette(p.id)}>{p.name}</button>
+          )),
+          document.getElementById("paletteSwitch")
+        )}
+        {ReactDOM.createPortal(
+          SCREENS.map(s => (
+            <button key={s.id} className={s.id === screen ? "active" : ""}
+              onClick={() => setScreen(s.id)}>{s.label}</button>
+          )),
+          document.getElementById("screenTabs")
+        )}
+        {ReactDOM.createPortal(
+          <IOSDevice width={402} height={874}>
+            {cur.render(palette)}
+          </IOSDevice>,
+          document.getElementById("deviceStage")
+        )}
+        {ReactDOM.createPortal(cur.cap, document.getElementById("caption"))}
+      </>
+    );
+  }
+
+  ReactDOM.createRoot(document.createElement("div")).render(<App />);
+</script>
+</body></html>
