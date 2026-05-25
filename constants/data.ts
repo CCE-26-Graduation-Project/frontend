@@ -87,6 +87,19 @@ export const PRODUCT_DETAIL = {
   oldPrice: '$1,099.00',
   discountPct: 9,
   tone: 'dark' as ProductTone,
+  details: [
+    'Titanium design with textured matte glass back',
+    'USB 3 speeds for up to 20× faster transfers',
+    'Emergency SOS via satellite',
+    'Crash Detection support',
+    'Face ID for secure authentication',
+  ],
+    images: [
+    require('../assets/images/products/iphone17_img1.jpg'),
+    require('../assets/images/products/iphone17_img2.jpg'),
+    require('../assets/images/products/iphone17_img3.jpg'),
+    // require('../assets/images/products/iphone-15-pro-4.jpg'),
+  ],
   specs: [
     ['Display', '6.1" Super Retina XDR'],
     ['Chip', 'A17 Pro'],
