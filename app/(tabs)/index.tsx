@@ -33,10 +33,11 @@ export default function HomeScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Top bar */}
+        {/* Top bar — on web the brand lives in the TopNav, so the in-screen
+            wordmark is hidden to avoid showing "Snoop" twice. */}
         <View style={styles.topBar}>
-          <LogoWordmark />
-          <Pressable style={styles.iconBtn} hitSlop={8}>
+          {Platform.OS === 'web' ? <View /> : <LogoWordmark />}
+          <Pressable style={styles.iconBtn} hitSlop={8} onPress={() => router.push('/notifications')}>
             <Feather name="bell" size={20} color={theme.colors.text1} />
           </Pressable>
         </View>
@@ -52,7 +53,7 @@ export default function HomeScreen() {
 
         {/* Search bar */}
         <View style={styles.searchWrapper}>
-          <SearchBar onTap={() => router.push('/search')} />
+          <SearchBar onTap={() => router.push({ pathname: '/browse', params: { focusAt: String(Date.now()) } })} />
         </View>
 
         {/* Categories */}

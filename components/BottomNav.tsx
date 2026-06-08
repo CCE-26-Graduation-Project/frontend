@@ -12,14 +12,14 @@ const NAV_HEIGHT = 66;
 const CAMERA_SIZE = 56;
 const CAMERA_FLOAT = 20; // pt the camera button floats above nav bar
 
-type TabKey = 'index' | 'saved' | 'camera' | 'alerts' | 'profile';
+type TabKey = 'index' | 'browse' | 'saved' | 'camera' | 'profile';
 
 const TABS: { name: TabKey; icon: React.ComponentProps<typeof Feather>['name']; label: string }[] = [
-  { name: 'index', icon: 'home', label: 'Home' },
-  { name: 'saved', icon: 'bookmark', label: 'Saved' },
+  { name: 'index',  icon: 'home',   label: 'Home' },
+  { name: 'browse', icon: 'search', label: 'Search' },
   { name: 'camera', icon: 'camera', label: 'Camera' },
-  { name: 'alerts', icon: 'bell', label: 'Alerts' },
-  { name: 'profile', icon: 'user', label: 'Profile' },
+  { name: 'saved',  icon: 'heart',  label: 'Favourites' },
+  { name: 'profile', icon: 'user',  label: 'Profile' },
 ];
 
 export function BottomNav({ state, navigation }: BottomTabBarProps) {

@@ -1,23 +1,29 @@
-import React, { useState } from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import React from 'react';
+import { View, Text, Pressable, StyleSheet, Image } from 'react-native';
 import { ProductPlaceholder } from './ProductPlaceholder';
 import { Icon } from './Icon';
 import { theme } from '../constants/theme';
 import type { Product } from '../constants/data';
+import { useFavourites } from '../contexts/FavouritesContext';
 
 interface Props {
   product: Product;
   onPress?: () => void;
 }
 
-export function ProductCard({ product, onPress }: Props) {
-  const [saved, setSaved] = useState(product.saved ?? false);
-  const { name, store, storeLogo, price, oldPrice, discountPct, tone } = product;
+function ProductCardInner({ product, onPress }: Props) {
+  const { toggleFavourite, isFavourite } = useFavourites();
+  const saved = isFavourite(product.id);
+  const { name, store, storeLogo, price, oldPrice, discountPct, tone, imageUrl, category } = product;
 
   return (
     <Pressable onPress={onPress} style={styles.card}>
       <View style={styles.imageWrapper}>
-        <ProductPlaceholder tone={tone} height={140} borderRadius={0} />
+        {imageUrl ? (
+          <Image source={{ uri: imageUrl }} style={styles.productImage} resizeMode="cover" />
+        ) : (
+          <ProductPlaceholder tone={tone} height={140} borderRadius={0} />
+        )}
 
         {discountPct !== undefined && (
           <View style={styles.discountBadge}>
@@ -25,30 +31,18 @@ export function ProductCard({ product, onPress }: Props) {
           </View>
         )}
 
-        {/* Add to compare */}
+        {/* Add to favourites */}
         <Pressable
-          style={styles.addBtn}
-          hitSlop={8}
-          onPress={(e) => e.stopPropagation?.()}
-        >
-          <Icon name="plus" size={16} color={theme.colors.surface} />
-        </Pressable>
-
-        {/* Bookmark */}
-        <Pressable
-          style={[styles.bookmarkBtn, saved && styles.bookmarkSaved]}
+          style={[styles.addBtn, saved && styles.addBtnSaved]}
           hitSlop={8}
           onPress={(e) => {
             e.stopPropagation?.();
-            setSaved((s) => !s);
+            toggleFavourite(product);
           }}
         >
-          <Icon
-            name="bookmark"
-            size={16}
-            color={saved ? theme.colors.surface : theme.colors.text1}
-          />
+          <Icon name={saved ? 'check' : 'plus'} size={16} color={theme.colors.surface} />
         </Pressable>
+
       </View>
 
       <View style={styles.info}>
@@ -57,6 +51,9 @@ export function ProductCard({ product, onPress }: Props) {
             <Text style={styles.storeLogoText}>{storeLogo}</Text>
           </View>
           <Text style={styles.storeName} numberOfLines={1}>{store}</Text>
+          {category && (
+            <Text style={styles.categoryBadge} numberOfLines={1}>{category}</Text>
+          )}
         </View>
         <Text style={styles.productName} numberOfLines={2}>{name}</Text>
         <View style={styles.priceRow}>
@@ -71,6 +68,10 @@ export function ProductCard({ product, onPress }: Props) {
   );
 }
 
+// Ignore onPress reference changes — the rendered output only depends on product data
+// and the favourites context hook inside, not which handler is passed in.
+export const ProductCard = React.memo(ProductCardInner, (prev, next) => prev.product === next.product);
+
 const styles = StyleSheet.create({
   card: {
     backgroundColor: theme.colors.surface,
@@ -80,6 +81,10 @@ const styles = StyleSheet.create({
   },
   imageWrapper: {
     position: 'relative',
+  },
+  productImage: {
+    width: '100%',
+    height: 140,
   },
   discountBadge: {
     position: 'absolute',
@@ -114,24 +119,8 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 4,
   },
-  bookmarkBtn: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255,249,210,0.92)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#1E2B4D',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.10,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  bookmarkSaved: {
-    backgroundColor: theme.colors.text1,
+  addBtnSaved: {
+    backgroundColor: theme.colors.savings,
   },
   info: {
     padding: 12,
@@ -161,6 +150,16 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: theme.colors.text2,
     flex: 1,
+  },
+  categoryBadge: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: theme.colors.text2,
+    backgroundColor: theme.colors.bg2,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    overflow: 'hidden',
   },
   productName: {
     fontSize: 15,

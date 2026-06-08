@@ -14,7 +14,10 @@ import { ProductCard } from '../components/ProductCard';
 import { ProductListCard } from '../components/ProductListCard';
 import { SnoopCharacter } from '../components/SnoopCharacter';
 import { theme } from '../constants/theme';
-import { RESULTS_GRID, RESULTS_LIST } from '../constants/data';
+import type { Product, ListProduct } from '../constants/data';
+// Backend service layer — see frontend/services. searchByText / searchByImage both hit
+// POST /api/public/search; enrichResults turns the returned IDs+scores into cards.
+import { searchByText, searchByImage, enrichResults, ApiError, NetworkError } from '../services';
 
 type ViewMode = 'grid' | 'list';
 
@@ -22,16 +25,66 @@ const NAV_TOTAL_HEIGHT = 114;
 
 export default function ResultsScreen() {
   const insets = useSafeAreaInsets();
-  const { query = 'iPhone 15 Pro' } = useLocalSearchParams<{ query?: string }>();
+  // `query` drives a text search; `imageUri` (set by the camera screen) drives an
+  // image search. Exactly one is normally present.
+  const { query = '', imageUri = '' } = useLocalSearchParams<{ query?: string; imageUri?: string }>();
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  // Bump this to re-run the search (used by the "Try again" buttons).
+  const [reloadKey, setReloadKey] = useState(0);
 
+  // ── Live backend search ──────────────────────────────────────────────────────
+  // Runs whenever the query (or reloadKey) changes.
+  //   searchByText(query)  → POST /api/public/search           (services/search.ts)
+  //   enrichResults(hits)  → {productId, similarity}[] → cards (services/products.ts)
+  // `cancelled` guards against setting state after the screen unmounts or the query
+  // changes mid-flight (avoids a stale response overwriting a newer one).
   useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 1800);
-    return () => clearTimeout(t);
-  }, []);
+    let cancelled = false;
+    const q = ((query as string) ?? '').trim();
+    const img = ((imageUri as string) ?? '').trim();
 
-  const hasResults = true; // toggle to false to show empty state
+    async function run() {
+      if (!q && !img) {
+        setProducts([]);
+        setError(null);
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
+      setError(null);
+      try {
+        // Image search takes precedence when an imageUri was passed (from the camera).
+        const hits = img ? await searchByImage(img) : await searchByText(q);
+        const cards = await enrichResults(hits);
+        if (!cancelled) setProducts(cards);
+      } catch (err) {
+        if (!cancelled) {
+          setError(
+            err instanceof NetworkError
+              ? 'Can’t reach the server. Check your connection and that the API is running.'
+              : err instanceof ApiError
+                ? err.message
+                : 'Something went wrong while searching.',
+          );
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [query, imageUri, reloadKey]);
+
+  const retry = () => setReloadKey((k) => k + 1);
+  const hasResults = products.length > 0;
+  // What to show in the top search pill / banner.
+  const searchLabel = imageUri ? 'Visual search' : (query as string);
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.colors.bg1 }]}>
@@ -44,8 +97,8 @@ export default function ResultsScreen() {
           style={styles.searchPill}
           onPress={() => router.push('/search')}
         >
-          <Feather name="search" size={18} color={theme.colors.text2} />
-          <Text style={styles.searchQuery} numberOfLines={1}>{query}</Text>
+          <Feather name={imageUri ? 'camera' : 'search'} size={18} color={theme.colors.text2} />
+          <Text style={styles.searchQuery} numberOfLines={1}>{searchLabel}</Text>
         </Pressable>
         <Pressable style={styles.iconBtn} hitSlop={8}>
           <Feather name="sliders" size={20} color={theme.colors.text1} />
@@ -75,9 +128,11 @@ export default function ResultsScreen() {
       </View>
 
       {loading ? (
-        <LoadingState query={query as string} />
+        <LoadingState query={searchLabel} />
+      ) : error ? (
+        <ErrorState message={error} onRetry={retry} />
       ) : !hasResults ? (
-        <NoResultsState query={query as string} />
+        <NoResultsState query={searchLabel} onRetry={retry} />
       ) : (
         <ScrollView
           contentContainerStyle={[
@@ -86,25 +141,40 @@ export default function ResultsScreen() {
           ]}
           showsVerticalScrollIndicator={false}
         >
-          {/* Typo correction banner */}
+          {/* Echo what the backend actually searched for */}
           <View style={styles.typoBar}>
             <Text style={styles.typoText}>
-              Showing results for <Text style={styles.typoBold}>{query}</Text>
+              Showing results for <Text style={styles.typoBold}>{searchLabel}</Text>
             </Text>
           </View>
 
+          {/* Real count from the backend response */}
           <Text style={styles.countText}>
-            {viewMode === 'grid' ? '2,340 results across 47 stores' : '412 results across 31 stores'}
+            {products.length} {products.length === 1 ? 'result' : 'results'}
           </Text>
 
           {viewMode === 'grid' ? (
             <View style={styles.grid}>
-              {RESULTS_GRID.map((product) => (
+              {products.map((product) => (
                 <View key={product.id} style={styles.gridCell}>
                   <ProductCard
                     product={product}
                     onPress={() =>
-                      router.push({ pathname: '/product/[id]', params: { id: product.id } })
+                      router.push({
+                        pathname: '/product/[id]',
+                        params: {
+                          id: product.id,
+                          name: product.name,
+                          price: product.price,
+                          store: product.store,
+                          storeLogo: product.storeLogo,
+                          category: product.category ?? '',
+                          imageUrl: product.imageUrl ?? '',
+                          productUrl: product.productUrl ?? '',
+                          oldPrice: product.oldPrice ?? '',
+                          discountPct: product.discountPct != null ? String(product.discountPct) : '',
+                        },
+                      })
                     }
                   />
                 </View>
@@ -112,12 +182,26 @@ export default function ResultsScreen() {
             </View>
           ) : (
             <View style={styles.listView}>
-              {RESULTS_LIST.map((product) => (
+              {products.map((product) => (
                 <ProductListCard
                   key={product.id}
-                  product={product}
+                  product={toListProduct(product)}
                   onPress={() =>
-                    router.push({ pathname: '/product/[id]', params: { id: product.id } })
+                    router.push({
+                      pathname: '/product/[id]',
+                      params: {
+                        id: product.id,
+                        name: product.name,
+                        price: product.price,
+                        store: product.store,
+                        storeLogo: product.storeLogo,
+                        category: product.category ?? '',
+                        imageUrl: product.imageUrl ?? '',
+                        productUrl: product.productUrl ?? '',
+                        oldPrice: product.oldPrice ?? '',
+                        discountPct: product.discountPct != null ? String(product.discountPct) : '',
+                      },
+                    })
                   }
                 />
               ))}
@@ -159,16 +243,16 @@ function LoadingState({ query }: { query: string }) {
   );
 }
 
-function NoResultsState({ query }: { query: string }) {
+function NoResultsState({ query, onRetry }: { query: string; onRetry: () => void }) {
   return (
     <ScrollView contentContainerStyle={styles.stateContainer}>
       <SnoopCharacter expression="surprised" size={180} />
       <Text style={styles.stateTitle}>Nothing found.</Text>
       <Text style={styles.stateBody}>
-        I checked 47 stores but couldn't match that. Try a different word or check the spelling.
+        I couldn't match that. Try a different word or check the spelling.
       </Text>
       <View style={styles.actionRow}>
-        <Pressable style={styles.secondaryBtn} onPress={() => {}}>
+        <Pressable style={styles.secondaryBtn} onPress={onRetry}>
           <Feather name="refresh-cw" size={16} color={theme.colors.text1} />
           <Text style={styles.secondaryBtnText}>Try again</Text>
         </Pressable>
@@ -179,6 +263,38 @@ function NoResultsState({ query }: { query: string }) {
       </View>
     </ScrollView>
   );
+}
+
+// Shown when the backend call fails (server down, network error, or API error).
+function ErrorState({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return (
+    <ScrollView contentContainerStyle={styles.stateContainer}>
+      <SnoopCharacter expression="surprised" size={160} />
+      <Text style={styles.stateTitle}>Search failed</Text>
+      <Text style={styles.stateBody}>{message}</Text>
+      <View style={styles.actionRow}>
+        <Pressable style={styles.secondaryBtn} onPress={onRetry}>
+          <Feather name="refresh-cw" size={16} color={theme.colors.text1} />
+          <Text style={styles.secondaryBtnText}>Try again</Text>
+        </Pressable>
+      </View>
+    </ScrollView>
+  );
+}
+
+// Adapt a grid `Product` to the list-card shape. Specs / price-range / multi-store
+// fields aren't returned by the search endpoint yet, so they stay minimal until a
+// product-details endpoint exists (see services/products.ts).
+function toListProduct(p: Product): ListProduct {
+  return {
+    id: p.id,
+    name: p.name,
+    specs: '',
+    priceRange: p.price,
+    topStores: [p.store],
+    stores: p.store,
+    tone: p.tone,
+  };
 }
 
 const styles = StyleSheet.create({

@@ -4,14 +4,15 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { ProductCard } from '../../components/ProductCard';
+import { SnoopCharacter } from '../../components/SnoopCharacter';
 import { theme } from '../../constants/theme';
-import { RESULTS_GRID } from '../../constants/data';
+import { useFavourites } from '../../contexts/FavouritesContext';
 
 const NAV_TOTAL_HEIGHT = 114;
-const SAVED_ITEMS = RESULTS_GRID.slice(0, 4).map((p) => ({ ...p, saved: true }));
 
 export default function SavedScreen() {
   const insets = useSafeAreaInsets();
+  const { favourites } = useFavourites();
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.colors.bg1 }]}>
@@ -22,7 +23,6 @@ export default function SavedScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Top bar */}
         <View style={styles.topBar}>
           <Text style={styles.title}>Saved</Text>
           <View style={styles.topBarRight}>
@@ -35,21 +35,51 @@ export default function SavedScreen() {
           </View>
         </View>
 
-        <Text style={styles.subtitle}>4 saved · last updated 2h ago</Text>
-
-        {/* Product grid */}
-        <View style={styles.grid}>
-          {SAVED_ITEMS.map((product) => (
-            <View key={product.id} style={styles.gridCell}>
-              <ProductCard
-                product={product}
-                onPress={() =>
-                  router.push({ pathname: '/product/[id]', params: { id: product.id } })
-                }
-              />
+        {favourites.length === 0 ? (
+          <View style={styles.emptyState}>
+            <SnoopCharacter expression="thinking" size={140} />
+            <Text style={styles.emptyTitle}>Nothing saved yet</Text>
+            <Text style={styles.emptyBody}>
+              Tap the + or bookmark on any product to save it here.
+            </Text>
+            <Pressable style={styles.searchBtn} onPress={() => router.push('/search')}>
+              <Feather name="search" size={16} color="#fff" />
+              <Text style={styles.searchBtnText}>Start searching</Text>
+            </Pressable>
+          </View>
+        ) : (
+          <>
+            <Text style={styles.subtitle}>
+              {favourites.length} {favourites.length === 1 ? 'item' : 'items'} saved
+            </Text>
+            <View style={styles.grid}>
+              {favourites.map((product) => (
+                <View key={product.id} style={styles.gridCell}>
+                  <ProductCard
+                    product={product}
+                    onPress={() =>
+                      router.push({
+                        pathname: '/product/[id]',
+                        params: {
+                          id: product.id,
+                          name: product.name,
+                          price: product.price,
+                          store: product.store,
+                          storeLogo: product.storeLogo,
+                          category: product.category ?? '',
+                          imageUrl: product.imageUrl ?? '',
+                          productUrl: product.productUrl ?? '',
+                          oldPrice: product.oldPrice ?? '',
+                          discountPct: product.discountPct != null ? String(product.discountPct) : '',
+                        },
+                      })
+                    }
+                  />
+                </View>
+              ))}
             </View>
-          ))}
-        </View>
+          </>
+        )}
       </ScrollView>
     </View>
   );
@@ -100,5 +130,42 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     flexShrink: 1,
     minWidth: 140,
+  },
+  emptyState: {
+    flex: 1,
+    alignItems: 'center',
+    paddingHorizontal: 32,
+    paddingTop: 48,
+    gap: 12,
+  },
+  emptyTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: theme.colors.text1,
+    letterSpacing: -0.3,
+    marginTop: 4,
+  },
+  emptyBody: {
+    fontSize: 16,
+    color: theme.colors.text2,
+    textAlign: 'center',
+    lineHeight: 22,
+    maxWidth: 260,
+  },
+  searchBtn: {
+    marginTop: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    height: 48,
+    paddingHorizontal: 24,
+    borderRadius: theme.radius.pill,
+    backgroundColor: theme.colors.text1,
+  },
+  searchBtnText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#fff',
+    letterSpacing: -0.05,
   },
 });

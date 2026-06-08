@@ -10,6 +10,9 @@ export interface Product {
   discountPct?: number;
   tone: ProductTone;
   saved?: boolean;
+  imageUrl?: string;
+  category?: string;
+  productUrl?: string;
 }
 
 export interface ListProduct {
