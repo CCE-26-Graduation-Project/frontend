@@ -14,7 +14,9 @@ import { router } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { RecentChip } from '../components/RecentChip';
 import { Icon } from '../components/Icon';
+import { AttachmentPreview } from '../components/AttachmentPreview';
 import { theme } from '../constants/theme';
+import { useImageAttachment } from '../hooks/useImageAttachment';
 
 const RECENT = ['iPhone 15 Pro', 'Sony headphones', 'Coffee table', 'Nike Air Max'];
 
@@ -30,15 +32,28 @@ export default function SearchScreen() {
   const insets = useSafeAreaInsets();
   const [query, setQuery] = React.useState('');
   const inputRef = useRef<TextInput>(null);
+  const attachment = useImageAttachment();
 
   useEffect(() => {
     const timer = setTimeout(() => inputRef.current?.focus(), 100);
     return () => clearTimeout(timer);
   }, []);
 
-  function submit(text: string) {
-    if (!text.trim()) return;
-    router.push({ pathname: '/results', params: { query: text.trim() } });
+  // Hand text and/or an attached image to the results screen, which runs the matching
+  // search (text → searchByText, image → searchByImage, both → searchMultimodal).
+  function submit(text: string, imageUri: string | null = attachment.uri) {
+    const q = text.trim();
+    if (!q && !imageUri) return;
+    router.push({
+      pathname: '/results',
+      params: { query: q, imageUri: imageUri ?? '' },
+    });
+  }
+
+  // Attach a single photo, then go straight to results (combined with any typed text).
+  async function handleAttach() {
+    const picked = await attachment.pick();
+    if (picked) submit(query, picked);
   }
 
   return (
@@ -71,12 +86,23 @@ export default function SearchScreen() {
               <Feather name="x" size={18} color={theme.colors.text2} />
             </Pressable>
           )}
+          {/* Attach a photo to search by image */}
+          <Pressable onPress={handleAttach} hitSlop={8} disabled={attachment.picking}>
+            <Feather name="paperclip" size={18} color={theme.colors.text2} />
+          </Pressable>
         </View>
 
         <Pressable onPress={() => router.back()} style={styles.cancelBtn} hitSlop={8}>
           <Text style={styles.cancelText}>Cancel</Text>
         </Pressable>
       </View>
+
+      {/* Attached image preview */}
+      {attachment.uri && (
+        <View style={styles.attachmentBar}>
+          <AttachmentPreview uri={attachment.uri} onRemove={attachment.clear} />
+        </View>
+      )}
 
       <ScrollView
         keyboardShouldPersistTaps="handled"
@@ -180,6 +206,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: theme.colors.surface,
     letterSpacing: -0.05,
+  },
+  attachmentBar: {
+    paddingHorizontal: theme.spacing.s4,
+    paddingTop: 4,
+    paddingBottom: 8,
   },
   scrollContent: {
     paddingBottom: 40,

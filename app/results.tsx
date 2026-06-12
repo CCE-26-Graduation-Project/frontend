@@ -17,7 +17,7 @@ import { theme } from '../constants/theme';
 import type { Product, ListProduct } from '../constants/data';
 // Backend service layer — see frontend/services. searchByText / searchByImage both hit
 // POST /api/public/search; enrichResults turns the returned IDs+scores into cards.
-import { searchByText, searchByImage, enrichResults, ApiError, NetworkError } from '../services';
+import { searchByText, searchByImage, searchMultimodal, enrichResults, ApiError, NetworkError } from '../services';
 
 type ViewMode = 'grid' | 'list';
 
@@ -56,8 +56,11 @@ export default function ResultsScreen() {
       setLoading(true);
       setError(null);
       try {
-        // Image search takes precedence when an imageUri was passed (from the camera).
-        const hits = img ? await searchByImage(img) : await searchByText(q);
+        // Pick the search mode from what was provided: image + text → multimodal,
+        // image only → image search, text only → text search.
+        const hits = img
+          ? (q ? await searchMultimodal(q, img) : await searchByImage(img))
+          : await searchByText(q);
         const cards = await enrichResults(hits);
         if (!cancelled) setProducts(cards);
       } catch (err) {
@@ -83,8 +86,9 @@ export default function ResultsScreen() {
 
   const retry = () => setReloadKey((k) => k + 1);
   const hasResults = products.length > 0;
-  // What to show in the top search pill / banner.
-  const searchLabel = imageUri ? 'Visual search' : (query as string);
+  // What to show in the top search pill / banner. When a photo was attached alongside
+  // text, show the text; a photo-only search shows "Visual search".
+  const searchLabel = imageUri ? ((query as string)?.trim() || 'Visual search') : (query as string);
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.colors.bg1 }]}>

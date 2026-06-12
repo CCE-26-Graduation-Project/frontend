@@ -17,9 +17,11 @@ import { router } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { ProductCard } from '../../components/ProductCard';
 import { SnoopCharacter } from '../../components/SnoopCharacter';
+import { AttachmentPreview } from '../../components/AttachmentPreview';
 import { theme } from '../../constants/theme';
 import type { Product } from '../../constants/data';
-import { searchByText, enrichResults, ApiError, NetworkError } from '../../services';
+import { searchByText, searchByImage, searchMultimodal, enrichResults, ApiError, NetworkError } from '../../services';
+import { useImageAttachment } from '../../hooks/useImageAttachment';
 
 const NAV_TOTAL_HEIGHT = 114;
 
@@ -35,6 +37,7 @@ export default function BrowseScreen() {
   const [searched, setSearched]         = useState('');
   const [error, setError]               = useState<string | null>(null);
   const [inputFocused, setInputFocused] = useState(false);
+  const attachment                      = useImageAttachment();
 
   // Focus the input after the tab-switch animation completes, but only when
   // the home screen explicitly triggered navigation (new focusAt timestamp).
@@ -50,15 +53,21 @@ export default function BrowseScreen() {
     }, [focusAt])
   );
 
-  const runSearch = useCallback(async (text: string) => {
+  // Runs a text-only, image-only, or combined (multimodal) search depending on what
+  // the user provided. `imageUri` defaults to the current attachment so the keyboard
+  // "search" key and the retry button both include any attached photo.
+  const runSearch = useCallback(async (text: string, imageUri: string | null = attachment.uri) => {
     const q = text.trim();
-    if (!q) return;
+    const img = imageUri;
+    if (!q && !img) return;
     Keyboard.dismiss();
     setLoading(true);
     setError(null);
-    setSearched(q);
+    setSearched(q || 'Visual search');
     try {
-      const hits = await searchByText(q);
+      const hits = img
+        ? (q ? await searchMultimodal(q, img) : await searchByImage(img))
+        : await searchByText(q);
       const cards = await enrichResults(hits);
       setProducts(cards);
     } catch (err) {
@@ -73,13 +82,20 @@ export default function BrowseScreen() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [attachment.uri]);
 
   const handleClear = () => {
     setQuery('');
     setError(null);
     inputRef.current?.focus();
   };
+
+  // Attach a single photo, then immediately run the search (combined with any text
+  // already typed). One tap = search by photo; type first to refine it.
+  const handleAttach = useCallback(async () => {
+    const picked = await attachment.pick();
+    if (picked) runSearch(query, picked);
+  }, [attachment, query, runSearch]);
 
   const renderItem = useCallback(({ item: product }: { item: Product }) => (
     <View style={styles.gridCell}>
@@ -134,6 +150,10 @@ export default function BrowseScreen() {
               <Feather name="x" size={16} color={theme.colors.text2} />
             </Pressable>
           )}
+          {/* Attach a photo to search by image */}
+          <Pressable onPress={handleAttach} hitSlop={8} disabled={attachment.picking}>
+            <Feather name="paperclip" size={18} color={theme.colors.text2} />
+          </Pressable>
         </View>
 
         {/* Cancel — visible while keyboard is open, just dismisses the keyboard */}
@@ -143,6 +163,13 @@ export default function BrowseScreen() {
           </Pressable>
         )}
       </View>
+
+      {/* Attached image preview */}
+      {attachment.uri && (
+        <View style={styles.attachmentBar}>
+          <AttachmentPreview uri={attachment.uri} onRemove={attachment.clear} />
+        </View>
+      )}
 
       {/* ── Result count bar ── */}
       {showResult && (
@@ -259,6 +286,11 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   searchIcon: { flexShrink: 0 },
+  attachmentBar: {
+    paddingHorizontal: theme.spacing.s4,
+    paddingTop: 10,
+    backgroundColor: theme.colors.bg1,
+  },
   input: {
     flex: 1,
     fontSize: 16,
