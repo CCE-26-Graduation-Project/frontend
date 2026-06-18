@@ -1,23 +1,28 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Image } from 'react-native';
 import { ProductPlaceholder } from './ProductPlaceholder';
 import { theme } from '../constants/theme';
-import type { TrendingProduct } from '../constants/data';
+import type { Product } from '../constants/data';
 
 interface Props {
-  product: TrendingProduct;
+  product: Product;
   onPress?: () => void;
 }
 
 export function TrendingCard({ product, onPress }: Props) {
-  const { name, vendor, tone } = product;
+  const { name, store, tone, imageUrls } = product;
+  const primaryImage = imageUrls?.[0];
   return (
     <Pressable onPress={onPress} style={styles.card}>
       <View style={styles.imageWrapper}>
-        <ProductPlaceholder tone={tone} height={100} borderRadius={12} />
+        {primaryImage ? (
+          <Image source={{ uri: primaryImage }} style={styles.image} resizeMode="cover" />
+        ) : (
+          <ProductPlaceholder tone={tone} height={100} borderRadius={12} />
+        )}
       </View>
       <Text style={styles.name} numberOfLines={2}>{name}</Text>
-      <Text style={styles.vendor} numberOfLines={1}>{vendor}</Text>
+      <Text style={styles.vendor} numberOfLines={1}>{store}</Text>
     </Pressable>
   );
 }
@@ -31,6 +36,10 @@ const styles = StyleSheet.create({
   imageWrapper: {
     borderRadius: 12,
     overflow: 'hidden',
+  },
+  image: {
+    width: 140,
+    height: 100,
   },
   name: {
     fontSize: 13,

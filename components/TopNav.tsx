@@ -20,7 +20,7 @@ const MAX_WIDTH = 1100; // centered content cap so the bar doesn't sprawl on wid
 const NAV_HEIGHT = 64;
 
 type NavItem = {
-  href: '/' | '/browse' | '/saved' | '/profile';
+  href: '/' | '/browse' | '/fav' | '/profile';
   icon: React.ComponentProps<typeof Feather>['name'];
   label: string;
 };
@@ -29,7 +29,7 @@ type NavItem = {
 const ITEMS: NavItem[] = [
   { href: '/',       icon: 'home',   label: 'Home' },
   { href: '/browse', icon: 'search', label: 'Search' },
-  { href: '/saved',  icon: 'heart',  label: 'Favourites' },
+  { href: '/fav',  icon: 'heart',  label: 'Favourites' },
   { href: '/profile', icon: 'user',  label: 'Profile' },
 ];
 

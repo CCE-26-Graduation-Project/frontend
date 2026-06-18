@@ -18,6 +18,7 @@ import type { Product, ListProduct } from '../constants/data';
 // Backend service layer — see frontend/services. searchByText / searchByImage both hit
 // POST /api/public/search; enrichResults turns the returned IDs+scores into cards.
 import { searchByText, searchByImage, searchMultimodal, enrichResults, ApiError, NetworkError } from '../services';
+import { useFavourites } from '../contexts/FavouritesContext';
 
 type ViewMode = 'grid' | 'list';
 
@@ -34,6 +35,7 @@ export default function ResultsScreen() {
   const [error, setError] = useState<string | null>(null);
   // Bump this to re-run the search (used by the "Try again" buttons).
   const [reloadKey, setReloadKey] = useState(0);
+  const { seedFavourites } = useFavourites();
 
   // ── Live backend search ──────────────────────────────────────────────────────
   // Runs whenever the query (or reloadKey) changes.
@@ -62,7 +64,12 @@ export default function ResultsScreen() {
           ? (q ? await searchMultimodal(q, img) : await searchByImage(img))
           : await searchByText(q);
         const cards = await enrichResults(hits);
-        if (!cancelled) setProducts(cards);
+        if (!cancelled) {
+          setProducts(cards);
+          // Pre-seed the favourites context with products the backend already marked
+          // as saved, so heart icons reflect the correct state immediately.
+          seedFavourites(cards);
+        }
       } catch (err) {
         if (!cancelled) {
           setError(
@@ -173,7 +180,7 @@ export default function ResultsScreen() {
                           store: product.store,
                           storeLogo: product.storeLogo,
                           category: product.category ?? '',
-                          imageUrl: product.imageUrl ?? '',
+                          imageUrls: JSON.stringify(product.imageUrls ?? []),
                           productUrl: product.productUrl ?? '',
                           oldPrice: product.oldPrice ?? '',
                           discountPct: product.discountPct != null ? String(product.discountPct) : '',
@@ -200,7 +207,7 @@ export default function ResultsScreen() {
                         store: product.store,
                         storeLogo: product.storeLogo,
                         category: product.category ?? '',
-                        imageUrl: product.imageUrl ?? '',
+                        imageUrls: JSON.stringify(product.imageUrls ?? []),
                         productUrl: product.productUrl ?? '',
                         oldPrice: product.oldPrice ?? '',
                         discountPct: product.discountPct != null ? String(product.discountPct) : '',
@@ -286,9 +293,8 @@ function ErrorState({ message, onRetry }: { message: string; onRetry: () => void
   );
 }
 
-// Adapt a grid `Product` to the list-card shape. Specs / price-range / multi-store
-// fields aren't returned by the search endpoint yet, so they stay minimal until a
-// product-details endpoint exists (see services/products.ts).
+// Adapt a search result Product to the list-card shape.
+// specs stays empty until the backend exposes per-product spec data.
 function toListProduct(p: Product): ListProduct {
   return {
     id: p.id,

@@ -16,8 +16,8 @@ import type { SearchResult } from './types';
  *   • app/search.tsx   → search box submits a query, app/results.tsx calls searchByText()
  *   • app/(tabs)/camera.tsx → captured image calls searchByImage()
  *
- * The endpoint returns only IDs + scores. Turning those into product cards is a second
- * step — see services/products.ts (enrichResults / getProductsByIds).
+ * The endpoint returns full product data. Turning results into UI cards is done via
+ * enrichResults() in services/products.ts.
  */
 
 const SEARCH_PATH = '/api/public/search';

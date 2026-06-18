@@ -119,3 +119,8 @@ export function postJson<T>(path: string, data: unknown, options: RequestOptions
 export function postMultipart<T>(path: string, form: FormData, options: RequestOptions = {}): Promise<T> {
   return request<T>('POST', path, { ...options, body: form });
 }
+
+/** DELETE without a body — used for removing a resource by ID (e.g. favourites). */
+export function deleteJson<T>(path: string, options?: RequestOptions): Promise<T> {
+  return request<T>('DELETE', path, options);
+}

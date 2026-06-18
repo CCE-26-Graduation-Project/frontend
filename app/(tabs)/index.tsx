@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   StyleSheet,
   SafeAreaView,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -16,12 +17,25 @@ import { CategoryCard } from '../../components/CategoryCard';
 import { TrendingCard } from '../../components/TrendingCard';
 import { SnoopCharacter } from '../../components/SnoopCharacter';
 import { theme } from '../../constants/theme';
-import { CATEGORY_LIST, TRENDING_PRODUCTS } from '../../constants/data';
+import { CATEGORY_LIST } from '../../constants/data';
+import type { Product } from '../../constants/data';
+import { getTrending } from '../../services';
 
-const NAV_TOTAL_HEIGHT = 114; // matches BottomNav container
+const NAV_TOTAL_HEIGHT = 114;
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
+  const [trending, setTrending] = useState<Product[]>([]);
+  const [trendingLoading, setTrendingLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    getTrending()
+      .then((products) => { if (!cancelled) setTrending(products); })
+      .catch(() => { /* silently show nothing on failure */ })
+      .finally(() => { if (!cancelled) setTrendingLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.colors.bg1 }]}>
@@ -33,8 +47,7 @@ export default function HomeScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Top bar — on web the brand lives in the TopNav, so the in-screen
-            wordmark is hidden to avoid showing "Snoop" twice. */}
+        {/* Top bar */}
         <View style={styles.topBar}>
           {Platform.OS === 'web' ? <View /> : <LogoWordmark />}
           <Pressable style={styles.iconBtn} hitSlop={8} onPress={() => router.push('/notifications')}>
@@ -69,19 +82,26 @@ export default function HomeScreen() {
         {/* Trending */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { paddingHorizontal: theme.spacing.s5 }]}>Trending</Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.trendingList}
-          >
-            {TRENDING_PRODUCTS.map((p) => (
-              <TrendingCard
-                key={p.id}
-                product={p}
-                onPress={() => router.push({ pathname: '/product/[id]', params: { id: p.id } })}
-              />
-            ))}
-          </ScrollView>
+          {trendingLoading ? (
+            <ActivityIndicator
+              style={styles.trendingLoader}
+              color={theme.colors.text2}
+            />
+          ) : (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.trendingList}
+            >
+              {trending.map((p) => (
+                <TrendingCard
+                  key={p.id}
+                  product={p}
+                  onPress={() => router.push({ pathname: '/product/[id]', params: { id: p.id, name: p.name, price: p.price, store: p.store, storeLogo: p.storeLogo, category: p.category ?? '', imageUrls: JSON.stringify(p.imageUrls ?? []), productUrl: p.productUrl ?? '' } })}
+                />
+              ))}
+            </ScrollView>
+          )}
         </View>
       </ScrollView>
     </View>
@@ -174,5 +194,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.s5,
     gap: 12,
     flexDirection: 'row',
+  },
+  trendingLoader: {
+    marginTop: 24,
+    alignSelf: 'center',
   },
 });

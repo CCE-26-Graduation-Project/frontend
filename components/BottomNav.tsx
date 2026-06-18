@@ -12,13 +12,13 @@ const NAV_HEIGHT = 66;
 const CAMERA_SIZE = 56;
 const CAMERA_FLOAT = 20; // pt the camera button floats above nav bar
 
-type TabKey = 'index' | 'browse' | 'saved' | 'camera' | 'profile';
+type TabKey = 'index' | 'browse' | 'fav' | 'camera' | 'profile';
 
 const TABS: { name: TabKey; icon: React.ComponentProps<typeof Feather>['name']; label: string }[] = [
   { name: 'index',  icon: 'home',   label: 'Home' },
   { name: 'browse', icon: 'search', label: 'Search' },
   { name: 'camera', icon: 'camera', label: 'Camera' },
-  { name: 'saved',  icon: 'heart',  label: 'Favourites' },
+  { name: 'fav',  icon: 'heart',  label: 'Favourites' },
   { name: 'profile', icon: 'user',  label: 'Profile' },
 ];
 

@@ -24,7 +24,7 @@ export default function TabsLayout() {
       >
         <Tabs.Screen name="index" />
         <Tabs.Screen name="browse" />
-        <Tabs.Screen name="saved" />
+        <Tabs.Screen name="fav" />
         {/* Camera is removed from web navigation (image capture is native-only).
             href: null drops it from the tab navigator on web. */}
         <Tabs.Screen name="camera" options={isWeb ? { href: null } : undefined} />

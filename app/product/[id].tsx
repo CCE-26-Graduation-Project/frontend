@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,8 @@ import {
   Dimensions,
   Image,
   Linking,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -20,12 +22,7 @@ import type { ProductTone } from '../../constants/data';
 import { useFavourites } from '../../contexts/FavouritesContext';
 
 const { width: SW } = Dimensions.get('window');
-const OUTER_PAD  = 14;
-const COL_GAP    = 10;
-const CONTENT_W  = SW - OUTER_PAD * 2;
-const LEFT_COL_W = Math.floor(CONTENT_W * 0.44);
-const RIGHT_COL_W = CONTENT_W - LEFT_COL_W - COL_GAP;
-const IMG_HEIGHT  = Math.round(LEFT_COL_W * 1.32);
+const GALLERY_HEIGHT = Math.round(SW * 0.72);
 
 export default function ProductDetailScreen() {
   const insets = useSafeAreaInsets();
@@ -36,7 +33,7 @@ export default function ProductDetailScreen() {
     store: string;
     storeLogo: string;
     category: string;
-    imageUrl: string;
+    imageUrls: string; // JSON.stringify(string[])
     productUrl: string;
     oldPrice: string;
     discountPct: string;
@@ -46,6 +43,7 @@ export default function ProductDetailScreen() {
   const saveScaleAnim = useRef(new Animated.Value(1)).current;
   const captionAnim   = useRef(new Animated.Value(0)).current;
   const captionTimer  = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
 
   const id          = params.id ?? '';
   const name        = params.name ?? 'Product';
@@ -53,22 +51,29 @@ export default function ProductDetailScreen() {
   const store       = params.store ?? '';
   const storeLogo   = params.storeLogo ?? store.charAt(0).toUpperCase();
   const category    = params.category ?? '';
-  const imageUrl    = params.imageUrl ?? '';
   const productUrl  = params.productUrl ?? '';
   const oldPrice    = params.oldPrice ?? '';
   const discountPct = params.discountPct ? parseInt(params.discountPct, 10) : null;
 
+  let imageUrls: string[] = [];
+  try { imageUrls = JSON.parse(params.imageUrls ?? '[]'); } catch { imageUrls = []; }
+
   const saved = isFavourite(id);
 
-  // Derive a stable tone from the id for the placeholder fallback
   const TONES: ProductTone[] = ['accent', 'warm', 'dark', 'character'];
   let hash = 0;
   for (let i = 0; i < id.length; i++) hash = (hash + id.charCodeAt(i)) % TONES.length;
   const tone = TONES[hash];
 
   function handleSave() {
-    const product = { id, name, store, storeLogo, price, imageUrl: imageUrl || undefined,
-      category: category || undefined, productUrl: productUrl || undefined, tone, saved: !saved };
+    const product = {
+      id, name, store, storeLogo, price,
+      imageUrls: imageUrls.length > 0 ? imageUrls : undefined,
+      category: category || undefined,
+      productUrl: productUrl || undefined,
+      tone,
+      saved: !saved,
+    };
     toggleFavourite(product);
     if (!saved) {
       Animated.sequence([
@@ -91,94 +96,114 @@ export default function ProductDetailScreen() {
     if (productUrl) Linking.openURL(productUrl);
   }
 
+  function handleGalleryScroll(e: NativeSyntheticEvent<NativeScrollEvent>) {
+    const index = Math.round(e.nativeEvent.contentOffset.x / SW);
+    setActiveIndex(index);
+  }
+
+  const hasImages = imageUrls.length > 0;
+
   return (
     <View style={[styles.screen, { backgroundColor: theme.colors.bg1 }]}>
-      <View style={[styles.topBar, { paddingTop: insets.top + 6 }]}>
+      {/* Floating back button rendered above the ScrollView */}
+      <View style={[styles.topBar, { paddingTop: insets.top + 6 }]} pointerEvents="box-none">
         <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={8}>
           <Feather name="arrow-left" size={20} color={theme.colors.text1} />
         </Pressable>
       </View>
 
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
-        <View style={styles.row}>
 
-          {/* Left column — product image */}
-          <View style={styles.leftCol}>
-            <View style={styles.imageWrap}>
-              {imageUrl ? (
+        {/* ── Image gallery ──────────────────────────────────────────────────── */}
+        <View style={styles.galleryWrap}>
+          {hasImages ? (
+            <ScrollView
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              onMomentumScrollEnd={handleGalleryScroll}
+              style={styles.galleryScroll}
+            >
+              {imageUrls.map((uri, idx) => (
                 <Image
-                  source={{ uri: imageUrl }}
-                  style={{ width: LEFT_COL_W, height: IMG_HEIGHT }}
-                  resizeMode="cover"
+                  key={idx}
+                  source={{ uri }}
+                  style={styles.galleryImage}
+                  resizeMode="contain"
                 />
-              ) : (
-                <ProductPlaceholder tone={tone} height={IMG_HEIGHT} borderRadius={0} />
-              )}
+              ))}
+            </ScrollView>
+          ) : (
+            <ProductPlaceholder tone={tone} height={GALLERY_HEIGHT} borderRadius={0} />
+          )}
+
+          {/* Dot indicators — only when there are multiple images */}
+          {hasImages && imageUrls.length > 1 && (
+            <View style={styles.dotsRow}>
+              {imageUrls.map((_, idx) => (
+                <View key={idx} style={[styles.dot, idx === activeIndex && styles.dotActive]} />
+              ))}
             </View>
-          </View>
+          )}
+        </View>
 
-          {/* Right column — product info */}
-          <View style={styles.rightCol}>
+        {/* ── Product info ───────────────────────────────────────────────────── */}
+        <View style={styles.infoSection}>
+          <Text style={styles.productName} numberOfLines={3}>{name}</Text>
 
-            <Text style={styles.productName} numberOfLines={4}>{name}</Text>
-
+          <View style={styles.metaRow}>
             {category ? (
               <View style={styles.catChip}>
                 <Text style={styles.catChipText}>{category.toUpperCase()}</Text>
               </View>
             ) : null}
-
             <View style={styles.storeRow}>
               <View style={styles.storeLogo}>
                 <Text style={styles.storeLogoText}>{storeLogo}</Text>
               </View>
               <Text style={styles.storeName} numberOfLines={1}>{store}</Text>
             </View>
-
-            <View style={styles.priceBlock}>
-              <Text style={styles.price}>{price}</Text>
-              {oldPrice ? (
-                <View style={styles.priceRow}>
-                  <Text style={styles.oldPrice}>{oldPrice}</Text>
-                  {discountPct != null && (
-                    <View style={styles.discBadge}>
-                      <Text style={styles.discText}>−{discountPct}%</Text>
-                    </View>
-                  )}
-                </View>
-              ) : null}
-            </View>
-
-            <View style={styles.divider} />
-
-            {/* Action buttons */}
-            <View style={styles.actionRow}>
-              <Pressable
-                style={[styles.gotoBtn, !productUrl && styles.gotoBtnDisabled]}
-                onPress={handleGoToStore}
-              >
-                <Text style={styles.gotoBtnText}>Go to store</Text>
-                <Feather name="arrow-right" size={12} color="#fff" />
-              </Pressable>
-
-              <Animated.View style={{ transform: [{ scale: saveScaleAnim }] }}>
-                <Pressable style={[styles.saveBtn, saved && styles.saveBtnActive]} onPress={handleSave}>
-                  <MaterialCommunityIcons
-                    name={saved ? 'heart' : 'heart-outline'}
-                    size={18}
-                    color={saved ? theme.colors.text1 : theme.colors.text2}
-                  />
-                </Pressable>
-              </Animated.View>
-            </View>
-
-            <Animated.Text
-              style={[styles.savedCaption, { opacity: captionAnim }]}
-            >
-              Added to favourites
-            </Animated.Text>
-
           </View>
+
+          <View style={styles.priceBlock}>
+            <Text style={styles.price}>{price}</Text>
+            {oldPrice ? (
+              <View style={styles.priceRow}>
+                <Text style={styles.oldPrice}>{oldPrice}</Text>
+                {discountPct != null && (
+                  <View style={styles.discBadge}>
+                    <Text style={styles.discText}>−{discountPct}%</Text>
+                  </View>
+                )}
+              </View>
+            ) : null}
+          </View>
+
+          <View style={styles.divider} />
+
+          <View style={styles.actionRow}>
+            <Pressable
+              style={[styles.gotoBtn, !productUrl && styles.gotoBtnDisabled]}
+              onPress={handleGoToStore}
+            >
+              <Text style={styles.gotoBtnText}>Go to store</Text>
+              <Feather name="arrow-right" size={12} color="#fff" />
+            </Pressable>
+
+            <Animated.View style={{ transform: [{ scale: saveScaleAnim }] }}>
+              <Pressable style={[styles.saveBtn, saved && styles.saveBtnActive]} onPress={handleSave}>
+                <MaterialCommunityIcons
+                  name={saved ? 'heart' : 'heart-outline'}
+                  size={18}
+                  color={saved ? theme.colors.text1 : theme.colors.text2}
+                />
+              </Pressable>
+            </Animated.View>
+          </View>
+
+          <Animated.Text style={[styles.savedCaption, { opacity: captionAnim }]}>
+            Added to favourites
+          </Animated.Text>
         </View>
       </ScrollView>
     </View>
@@ -187,42 +212,79 @@ export default function ProductDetailScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  topBar: { paddingHorizontal: OUTER_PAD, paddingBottom: 6, zIndex: 5 },
+  topBar: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 14,
+    paddingBottom: 6,
+    zIndex: 10,
+  },
   backBtn: {
     width: 38, height: 38, borderRadius: 19,
     justifyContent: 'center', alignItems: 'center',
     backgroundColor: theme.colors.surface,
     ...theme.shadows.rest,
   },
-  row: {
-    flexDirection: 'row',
-    paddingHorizontal: OUTER_PAD,
-    paddingTop: 2,
-    gap: COL_GAP,
-    alignItems: 'flex-start',
-  },
-  leftCol:  { width: LEFT_COL_W },
-  rightCol: { width: RIGHT_COL_W, paddingTop: 2 },
-  imageWrap: {
-    width: LEFT_COL_W,
-    height: IMG_HEIGHT,
-    borderRadius: theme.radius.card,
-    overflow: 'hidden',
+
+  // Gallery
+  galleryWrap: {
+    width: SW,
+    height: GALLERY_HEIGHT,
     backgroundColor: theme.colors.bg2,
-    ...theme.shadows.rest,
+  },
+  galleryScroll: {
+    width: SW,
+    height: GALLERY_HEIGHT,
+  },
+  galleryImage: {
+    width: SW,
+    height: GALLERY_HEIGHT,
+  },
+  dotsRow: {
+    position: 'absolute',
+    bottom: 10,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: 'rgba(0,0,0,0.25)',
+  },
+  dotActive: {
+    backgroundColor: theme.colors.text1,
+    width: 18,
+  },
+
+  // Info section
+  infoSection: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    gap: 0,
+  },
+  productName: {
+    fontSize: 20, fontWeight: '700', color: theme.colors.text1,
+    letterSpacing: -0.3, lineHeight: 26, marginBottom: 10,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 12,
+    flexWrap: 'wrap',
   },
   catChip: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 7, paddingVertical: 3,
-    borderRadius: 5, backgroundColor: theme.colors.text1,
-    marginBottom: 10,
+    paddingHorizontal: 8, paddingVertical: 4,
+    borderRadius: 6, backgroundColor: theme.colors.text1,
   },
   catChipText: { fontSize: 9, fontWeight: '700', color: theme.colors.surface, letterSpacing: 0.6 },
-  productName: {
-    fontSize: 17, fontWeight: '700', color: theme.colors.text1,
-    letterSpacing: -0.3, lineHeight: 22, marginBottom: 8,
-  },
-  storeRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10 },
+  storeRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   storeLogo: {
     width: 24, height: 24, borderRadius: 6,
     backgroundColor: theme.colors.surface,
@@ -230,46 +292,46 @@ const styles = StyleSheet.create({
     ...theme.shadows.rest,
   },
   storeLogoText: { fontSize: 9, fontWeight: '800', color: theme.colors.text1 },
-  storeName: { fontSize: 12, color: theme.colors.text2, flex: 1 },
-  priceBlock: { gap: 3, marginBottom: 10 },
+  storeName: { fontSize: 13, color: theme.colors.text2 },
+  priceBlock: { gap: 3, marginBottom: 14 },
   price: {
-    fontFamily: 'monospace', fontSize: 21, fontWeight: '700',
+    fontFamily: 'monospace', fontSize: 26, fontWeight: '700',
     color: theme.colors.savings, letterSpacing: -0.4,
   },
-  priceRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  priceRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   oldPrice: {
-    fontFamily: 'monospace', fontSize: 12,
+    fontFamily: 'monospace', fontSize: 14,
     color: theme.colors.text2, textDecorationLine: 'line-through',
   },
   discBadge: {
-    paddingHorizontal: 5, paddingVertical: 2,
+    paddingHorizontal: 6, paddingVertical: 2,
     borderRadius: 4, backgroundColor: theme.colors.savingsSoft,
   },
-  discText: { fontSize: 10, fontWeight: '700', color: theme.colors.savings },
+  discText: { fontSize: 11, fontWeight: '700', color: theme.colors.savings },
   divider: {
     height: StyleSheet.hairlineWidth,
     backgroundColor: theme.colors.divider,
-    marginVertical: 10,
+    marginVertical: 12,
   },
-  actionRow: { flexDirection: 'row', gap: 8, marginTop: 4, alignItems: 'center' },
+  actionRow: { flexDirection: 'row', gap: 10, alignItems: 'center' },
   gotoBtn: {
-    flex: 1, height: 44,
+    flex: 1, height: 48,
     backgroundColor: theme.colors.text1,
     borderRadius: theme.radius.pill,
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
     ...theme.shadows.card,
   },
   gotoBtnDisabled: { opacity: 0.45 },
-  gotoBtnText: { fontSize: 13, fontWeight: '600', color: '#fff', letterSpacing: -0.1 },
+  gotoBtnText: { fontSize: 15, fontWeight: '600', color: '#fff', letterSpacing: -0.1 },
   saveBtn: {
-    width: 44, height: 44, borderRadius: theme.radius.pill,
+    width: 48, height: 48, borderRadius: theme.radius.pill,
     backgroundColor: theme.colors.surface,
     justifyContent: 'center', alignItems: 'center',
     borderWidth: 1.5, borderColor: theme.colors.divider,
   },
   saveBtnActive: { backgroundColor: '#FFEBCC', borderColor: '#FFEBCC' },
   savedCaption: {
-    fontSize: 11, fontWeight: '600', color: theme.colors.savings,
-    marginTop: 8, textAlign: 'center',
+    fontSize: 12, fontWeight: '600', color: theme.colors.savings,
+    marginTop: 10, textAlign: 'center',
   },
 });

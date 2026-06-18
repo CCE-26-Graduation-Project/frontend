@@ -5,26 +5,30 @@
  *     import { searchByText, enrichResults } from '../services';
  *
  * Files:
- *   config.ts     base URLs (per-platform) + timeouts
- *   apiClient.ts  fetch wrapper: timeout, JSON, errors, session cookies
- *   types.ts      wire shapes (SearchResult, ApiProduct, AuthUser)
- *   search.ts     WIRED  → POST /api/public/search  (text/img embeddings)
- *   products.ts   STUBS  → product details/trending + API→UI mapping
- *   auth.ts       node-auth (SuperTokens) sign in/up/out + session check
+ *   config.ts       base URLs (per-platform) + timeouts
+ *   apiClient.ts    fetch wrapper: timeout, JSON, errors, session cookies
+ *   types.ts        wire shapes (SearchResult, TrendingResultDto, FavouriteResultDto, AuthUser)
+ *   search.ts       WIRED → POST /api/public/search  (text/img embeddings)
+ *   products.ts     WIRED → GET /api/public/trending + API→UI mapping
+ *   favourites.ts   WIRED → GET/POST/DELETE /api/secure/favourites
+ *   auth.ts         node-auth (SuperTokens) sign in/up/out + session check
  */
 
 export { config } from './config';
-export { ApiError, NetworkError, getJson, postJson, postMultipart } from './apiClient';
-export type { SearchResult, ApiProduct, AuthUser } from './types';
+export { ApiError, NetworkError, getJson, postJson, postMultipart, deleteJson } from './apiClient';
+export type { SearchResult, TrendingResultDto, FavouriteResultDto, AuthUser } from './types';
 
 export { searchByText, searchByImage, searchMultimodal } from './search';
 export {
-  getProductsByIds,
-  getProductById,
   getTrending,
   enrichResults,
-  mapApiProductToUi,
-  toPlaceholderProduct,
-  NotImplementedError,
+  searchResultToProduct,
+  trendingResultToProduct,
 } from './products';
+export {
+  getFavourites,
+  addFavourite,
+  removeFavourite,
+  favouriteToProduct,
+} from './favourites';
 export { signUp, signIn, signOut, isSignedIn } from './auth';

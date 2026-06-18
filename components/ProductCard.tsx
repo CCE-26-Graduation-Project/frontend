@@ -14,13 +14,14 @@ interface Props {
 function ProductCardInner({ product, onPress }: Props) {
   const { toggleFavourite, isFavourite } = useFavourites();
   const saved = isFavourite(product.id);
-  const { name, store, storeLogo, price, oldPrice, discountPct, tone, imageUrl, category } = product;
+  const { name, store, storeLogo, price, oldPrice, discountPct, tone, imageUrls, category } = product;
+  const primaryImage = imageUrls?.[0];
 
   return (
     <Pressable onPress={onPress} style={styles.card}>
       <View style={styles.imageWrapper}>
-        {imageUrl ? (
-          <Image source={{ uri: imageUrl }} style={styles.productImage} resizeMode="cover" />
+        {primaryImage ? (
+          <Image source={{ uri: primaryImage }} style={styles.productImage} resizeMode="cover" />
         ) : (
           <ProductPlaceholder tone={tone} height={140} borderRadius={0} />
         )}

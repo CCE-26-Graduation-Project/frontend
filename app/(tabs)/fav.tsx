@@ -10,7 +10,7 @@ import { useFavourites } from '../../contexts/FavouritesContext';
 
 const NAV_TOTAL_HEIGHT = 114;
 
-export default function SavedScreen() {
+export default function FavScreen() {
   const insets = useSafeAreaInsets();
   const { favourites } = useFavourites();
 
@@ -24,7 +24,7 @@ export default function SavedScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.topBar}>
-          <Text style={styles.title}>Saved</Text>
+          <Text style={styles.title}>Favourites</Text>
           <View style={styles.topBarRight}>
             <Pressable style={styles.iconBtn} hitSlop={8}>
               <Feather name="grid" size={18} color={theme.colors.text1} />
@@ -38,9 +38,9 @@ export default function SavedScreen() {
         {favourites.length === 0 ? (
           <View style={styles.emptyState}>
             <SnoopCharacter expression="thinking" size={140} />
-            <Text style={styles.emptyTitle}>Nothing saved yet</Text>
+            <Text style={styles.emptyTitle}>No favourites yet</Text>
             <Text style={styles.emptyBody}>
-              Tap the + or bookmark on any product to save it here.
+              Tap the heart on any product to add it to your favourites.
             </Text>
             <Pressable style={styles.searchBtn} onPress={() => router.push('/search')}>
               <Feather name="search" size={16} color="#fff" />
@@ -67,7 +67,7 @@ export default function SavedScreen() {
                           store: product.store,
                           storeLogo: product.storeLogo,
                           category: product.category ?? '',
-                          imageUrl: product.imageUrl ?? '',
+                          imageUrls: JSON.stringify(product.imageUrls ?? []),
                           productUrl: product.productUrl ?? '',
                           oldPrice: product.oldPrice ?? '',
                           discountPct: product.discountPct != null ? String(product.discountPct) : '',

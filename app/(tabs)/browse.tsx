@@ -111,7 +111,7 @@ export default function BrowseScreen() {
               store: product.store,
               storeLogo: product.storeLogo,
               category: product.category ?? '',
-              imageUrl: product.imageUrl ?? '',
+              imageUrls: JSON.stringify(product.imageUrls ?? []),
               productUrl: product.productUrl ?? '',
               oldPrice: product.oldPrice ?? '',
               discountPct: product.discountPct != null ? String(product.discountPct) : '',
