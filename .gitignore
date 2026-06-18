@@ -16,7 +16,6 @@ expo-env.d.ts
 *.orig.*
 
 # Environment variables
-.env
 .env.*
 
 # IDE
