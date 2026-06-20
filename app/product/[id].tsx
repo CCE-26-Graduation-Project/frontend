@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -20,6 +20,7 @@ import { theme } from '../../constants/theme';
 import { ProductPlaceholder } from '../../components/ProductPlaceholder';
 import type { ProductTone } from '../../constants/data';
 import { useFavourites } from '../../contexts/FavouritesContext';
+import { postJson } from '../../services';
 
 const { width: SW } = Dimensions.get('window');
 const GALLERY_HEIGHT = Math.round(SW * 0.72);
@@ -59,6 +60,11 @@ export default function ProductDetailScreen() {
   try { imageUrls = JSON.parse(params.imageUrls ?? '[]'); } catch { imageUrls = []; }
 
   const saved = isFavourite(id);
+
+  useEffect(() => {
+    if (!id) return;
+    postJson(`/api/public/products/${id}/click`, {}).catch(() => {});
+  }, [id]);
 
   const TONES: ProductTone[] = ['accent', 'warm', 'dark', 'character'];
   let hash = 0;
