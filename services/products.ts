@@ -43,8 +43,8 @@ export function trendingResultToProduct(result: TrendingResultDto): Product {
   };
 }
 
-export async function getTrending(): Promise<Product[]> {
-  const results = await getJson<TrendingResultDto[]>('/api/public/trending');
+export async function getTrending(timeframe: 'daily' | 'weekly' | 'monthly' | 'all-time' = 'daily'): Promise<Product[]> {
+  const results = await getJson<TrendingResultDto[]>(`/api/public/trending?timeframe=${timeframe}`);
   return results.map(trendingResultToProduct);
 }
 

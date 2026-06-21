@@ -21,6 +21,19 @@ export interface SearchResult {
   isFavourite: boolean;
 }
 
+/**
+ * Mirrors SearchPageDto in springboot-api/.../search/SearchPageDto.java
+ * The /api/public/search endpoint returns this paginated wrapper; the actual
+ * results live in `content`.
+ */
+export interface SearchPage {
+  content: SearchResult[];
+  page: number;
+  pageSize: number;
+  totalElements: number;
+  totalPages: number;
+}
+
 /** Mirrors TrendingResultDto in springboot-api/.../trending/TrendingResultDto.java */
 export interface TrendingResultDto {
   productId: string;

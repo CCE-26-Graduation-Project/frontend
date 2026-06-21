@@ -23,19 +23,30 @@ import { getTrending } from '../../services';
 
 const NAV_TOTAL_HEIGHT = 114;
 
+type Timeframe = 'daily' | 'weekly' | 'monthly' | 'all-time';
+
+const TIMEFRAME_TABS: { key: Timeframe; label: string }[] = [
+  { key: 'all-time', label: 'All Time' },
+  { key: 'monthly', label: 'Monthly' },
+  { key: 'weekly', label: 'Weekly' },
+  { key: 'daily', label: 'Daily' },
+];
+
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const [trending, setTrending] = useState<Product[]>([]);
   const [trendingLoading, setTrendingLoading] = useState(true);
+  const [timeframe, setTimeframe] = useState<Timeframe>('all-time');
 
   useEffect(() => {
     let cancelled = false;
-    getTrending()
+    setTrendingLoading(true);
+    getTrending(timeframe)
       .then((products) => { if (!cancelled) setTrending(products); })
-      .catch(() => { /* silently show nothing on failure */ })
+      .catch(() => { if (!cancelled) setTrending([]); })
       .finally(() => { if (!cancelled) setTrendingLoading(false); });
     return () => { cancelled = true; };
-  }, []);
+  }, [timeframe]);
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.colors.bg1 }]}>
@@ -82,6 +93,30 @@ export default function HomeScreen() {
         {/* Trending */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { paddingHorizontal: theme.spacing.s5 }]}>Trending</Text>
+
+          {/* Timeframe filter pills */}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.timeframePills}
+          >
+            {TIMEFRAME_TABS.map((tab) => {
+              const active = tab.key === timeframe;
+              return (
+                <Pressable
+                  key={tab.key}
+                  style={[styles.pill, active && styles.pillActive]}
+                  onPress={() => setTimeframe(tab.key)}
+                  hitSlop={4}
+                >
+                  <Text style={[styles.pillText, active && styles.pillTextActive]}>
+                    {tab.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+
           {trendingLoading ? (
             <ActivityIndicator
               style={styles.trendingLoader}
@@ -198,5 +233,30 @@ const styles = StyleSheet.create({
   trendingLoader: {
     marginTop: 24,
     alignSelf: 'center',
+  },
+  timeframePills: {
+    paddingHorizontal: theme.spacing.s5,
+    gap: 8,
+    flexDirection: 'row',
+    marginBottom: 12,
+  },
+  pill: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: theme.radius.pill,
+    backgroundColor: theme.colors.bg2,
+  },
+  pillActive: {
+    backgroundColor: theme.colors.accentDeep,
+  },
+  pillText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: theme.colors.text2,
+    letterSpacing: -0.04,
+  },
+  pillTextActive: {
+    color: theme.colors.white,
+    fontWeight: '600',
   },
 });

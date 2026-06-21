@@ -1,8 +1,8 @@
 import React, { useRef, useEffect } from 'react';
-import { View, Text, Pressable, StyleSheet, Animated, Platform } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Animated } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
-import { theme } from '../constants/theme';
+import { LinearGradient } from 'expo-linear-gradient';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 
 const NAV_BG = '#0D0B61';
@@ -11,6 +11,8 @@ const NAV_INACTIVE = 'rgba(255, 249, 210, 0.55)';
 const NAV_HEIGHT = 66;
 const CAMERA_SIZE = 56;
 const CAMERA_FLOAT = 20; // pt the camera button floats above nav bar
+// Blue → indigo gradient for the floating "+" button (matches the reference design).
+const CAMERA_GRADIENT = ['#6C7CF0', '#4734C6'] as const;
 
 type TabKey = 'index' | 'browse' | 'fav' | 'camera' | 'profile';
 
@@ -52,17 +54,19 @@ export function BottomNav({ state, navigation }: BottomTabBarProps) {
 
   return (
     <View style={[styles.container, { height: containerHeight }]} pointerEvents="box-none">
-      {/* Floating camera button */}
+      {/* Floating camera button — a blue→indigo gradient circle that nests into the bar,
+          with a soft glow so it reads as part of the navbar rather than a detached chip. */}
       <View style={styles.cameraAnchor} pointerEvents="box-none">
-        <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
-          <Pressable
-            onPress={() => navigate('camera')}
-            style={[
-              styles.cameraBtn,
-              { borderColor: theme.colors.bg1 },
-            ]}
-          >
-            <Feather name="camera" size={22} color={NAV_BG} />
+        <Animated.View style={[styles.cameraShadow, { transform: [{ scale: pulseAnim }] }]}>
+          <Pressable onPress={() => navigate('camera')} style={styles.cameraBtn}>
+            <LinearGradient
+              colors={CAMERA_GRADIENT}
+              start={{ x: 0.1, y: 0 }}
+              end={{ x: 0.9, y: 1 }}
+              style={styles.cameraGradient}
+            >
+              <Feather name="camera" size={24} color="#FFFFFF" />
+            </LinearGradient>
           </Pressable>
         </Animated.View>
       </View>
@@ -122,19 +126,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 25,
   },
+  // Wrapper carries the soft glow so the gradient fill stays crisp and circular.
+  cameraShadow: {
+    borderRadius: CAMERA_SIZE / 2,
+    backgroundColor: CAMERA_GRADIENT[1],
+    shadowColor: CAMERA_GRADIENT[1],
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.45,
+    shadowRadius: 14,
+    elevation: 12,
+  },
   cameraBtn: {
     width: CAMERA_SIZE,
     height: CAMERA_SIZE,
     borderRadius: CAMERA_SIZE / 2,
-    backgroundColor: theme.colors.surface,
+    overflow: 'hidden',
+  },
+  cameraGradient: {
+    width: CAMERA_SIZE,
+    height: CAMERA_SIZE,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 4,
-    shadowColor: NAV_BG,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.40,
-    shadowRadius: 12,
-    elevation: 12,
   },
   navBar: {
     position: 'absolute',

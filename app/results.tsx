@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -13,11 +13,12 @@ import { Feather } from '@expo/vector-icons';
 import { ProductCard } from '../components/ProductCard';
 import { ProductListCard } from '../components/ProductListCard';
 import { SnoopCharacter } from '../components/SnoopCharacter';
+import { LoadMoreButton } from '../components/LoadMoreButton';
 import { theme } from '../constants/theme';
 import type { Product, ListProduct } from '../constants/data';
-// Backend service layer — see frontend/services. searchByText / searchByImage both hit
-// POST /api/public/search; enrichResults turns the returned IDs+scores into cards.
-import { searchByText, searchByImage, searchMultimodal, enrichResults, ApiError, NetworkError } from '../services';
+// Search + pagination lifecycle lives in the hook (hooks/usePaginatedSearch.ts), which
+// wraps POST /api/public/search and accumulates pages for the "Load more" button.
+import { usePaginatedSearch } from '../hooks/usePaginatedSearch';
 import { useFavourites } from '../contexts/FavouritesContext';
 
 type ViewMode = 'grid' | 'list';
@@ -30,66 +31,32 @@ export default function ResultsScreen() {
   // image search. Exactly one is normally present.
   const { query = '', imageUri = '' } = useLocalSearchParams<{ query?: string; imageUri?: string }>();
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
-  const [loading, setLoading] = useState(true);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [error, setError] = useState<string | null>(null);
   // Bump this to re-run the search (used by the "Try again" buttons).
   const [reloadKey, setReloadKey] = useState(0);
   const { seedFavourites } = useFavourites();
 
+  // Pre-seed the favourites context with products the backend already marked as saved,
+  // so heart icons reflect the correct state immediately (for every page loaded).
+  const {
+    products,
+    loading,
+    loadingMore,
+    error,
+    loadMoreError,
+    hasMore,
+    totalElements,
+    search,
+    loadMore,
+  } = usePaginatedSearch({ onResults: seedFavourites, initialLoading: true });
+
   // ── Live backend search ──────────────────────────────────────────────────────
-  // Runs whenever the query (or reloadKey) changes.
-  //   searchByText(query)  → POST /api/public/search           (services/search.ts)
-  //   enrichResults(hits)  → {productId, similarity}[] → cards (services/products.ts)
-  // `cancelled` guards against setting state after the screen unmounts or the query
-  // changes mid-flight (avoids a stale response overwriting a newer one).
+  // Re-runs the search at page 0 whenever the query/imageUri (or reloadKey) changes.
+  // The hook handles stale-response guarding, pagination, and error mapping.
   useEffect(() => {
-    let cancelled = false;
     const q = ((query as string) ?? '').trim();
     const img = ((imageUri as string) ?? '').trim();
-
-    async function run() {
-      if (!q && !img) {
-        setProducts([]);
-        setError(null);
-        setLoading(false);
-        return;
-      }
-      setLoading(true);
-      setError(null);
-      try {
-        // Pick the search mode from what was provided: image + text → multimodal,
-        // image only → image search, text only → text search.
-        const hits = img
-          ? (q ? await searchMultimodal(q, img) : await searchByImage(img))
-          : await searchByText(q);
-        const cards = await enrichResults(hits);
-        if (!cancelled) {
-          setProducts(cards);
-          // Pre-seed the favourites context with products the backend already marked
-          // as saved, so heart icons reflect the correct state immediately.
-          seedFavourites(cards);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(
-            err instanceof NetworkError
-              ? 'Can’t reach the server. Check your connection and that the API is running.'
-              : err instanceof ApiError
-                ? err.message
-                : 'Something went wrong while searching.',
-          );
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-
-    run();
-    return () => {
-      cancelled = true;
-    };
-  }, [query, imageUri, reloadKey]);
+    search({ text: q, imageUri: img || null });
+  }, [query, imageUri, reloadKey, search]);
 
   const retry = () => setReloadKey((k) => k + 1);
   const hasResults = products.length > 0;
@@ -159,9 +126,12 @@ export default function ResultsScreen() {
             </Text>
           </View>
 
-          {/* Real count from the backend response */}
+          {/* Real count from the backend response. When more pages exist, show how many
+              of the total are currently loaded. */}
           <Text style={styles.countText}>
-            {products.length} {products.length === 1 ? 'result' : 'results'}
+            {totalElements > products.length
+              ? `Showing ${products.length} of ${totalElements} results`
+              : `${products.length} ${products.length === 1 ? 'result' : 'results'}`}
           </Text>
 
           {viewMode === 'grid' ? (
@@ -217,6 +187,11 @@ export default function ResultsScreen() {
                 />
               ))}
             </View>
+          )}
+
+          {/* Fetches the next page and appends it to the list above. */}
+          {hasMore && (
+            <LoadMoreButton onPress={loadMore} loading={loadingMore} error={loadMoreError} />
           )}
         </ScrollView>
       )}

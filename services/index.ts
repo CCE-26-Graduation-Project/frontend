@@ -16,7 +16,7 @@
 
 export { config } from './config';
 export { ApiError, NetworkError, getJson, postJson, postMultipart, deleteJson } from './apiClient';
-export type { SearchResult, TrendingResultDto, FavouriteResultDto, AuthUser } from './types';
+export type { SearchResult, SearchPage, TrendingResultDto, FavouriteResultDto, AuthUser } from './types';
 
 export { searchByText, searchByImage, searchMultimodal } from './search';
 export {

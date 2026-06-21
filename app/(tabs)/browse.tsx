@@ -18,9 +18,10 @@ import { Feather } from '@expo/vector-icons';
 import { ProductCard } from '../../components/ProductCard';
 import { SnoopCharacter } from '../../components/SnoopCharacter';
 import { AttachmentPreview } from '../../components/AttachmentPreview';
+import { LoadMoreButton } from '../../components/LoadMoreButton';
 import { theme } from '../../constants/theme';
 import type { Product } from '../../constants/data';
-import { searchByText, searchByImage, searchMultimodal, enrichResults, ApiError, NetworkError } from '../../services';
+import { usePaginatedSearch } from '../../hooks/usePaginatedSearch';
 import { useImageAttachment } from '../../hooks/useImageAttachment';
 
 const NAV_TOTAL_HEIGHT = 114;
@@ -32,12 +33,22 @@ export default function BrowseScreen() {
   const lastFocusAt = useRef<string | undefined>(undefined);
 
   const [query, setQuery]               = useState('');
-  const [loading, setLoading]           = useState(false);
-  const [products, setProducts]         = useState<Product[]>([]);
   const [searched, setSearched]         = useState('');
-  const [error, setError]               = useState<string | null>(null);
   const [inputFocused, setInputFocused] = useState(false);
   const attachment                      = useImageAttachment();
+
+  // Search + pagination lifecycle (shared with app/results.tsx via the hook).
+  const {
+    products,
+    loading,
+    loadingMore,
+    error,
+    loadMoreError,
+    hasMore,
+    totalElements,
+    search,
+    loadMore,
+  } = usePaginatedSearch();
 
   // Focus the input after the tab-switch animation completes, but only when
   // the home screen explicitly triggered navigation (new focusAt timestamp).
@@ -55,38 +66,19 @@ export default function BrowseScreen() {
 
   // Runs a text-only, image-only, or combined (multimodal) search depending on what
   // the user provided. `imageUri` defaults to the current attachment so the keyboard
-  // "search" key and the retry button both include any attached photo.
-  const runSearch = useCallback(async (text: string, imageUri: string | null = attachment.uri) => {
+  // "search" key and the retry button both include any attached photo. The hook owns
+  // loading/error/products + pagination; we only track the label to echo back.
+  const runSearch = useCallback((text: string, imageUri: string | null = attachment.uri) => {
     const q = text.trim();
     const img = imageUri;
     if (!q && !img) return;
     Keyboard.dismiss();
-    setLoading(true);
-    setError(null);
     setSearched(q || 'Visual search');
-    try {
-      const hits = img
-        ? (q ? await searchMultimodal(q, img) : await searchByImage(img))
-        : await searchByText(q);
-      const cards = await enrichResults(hits);
-      setProducts(cards);
-    } catch (err) {
-      setError(
-        err instanceof NetworkError
-          ? "Can't reach the server. Check your connection and that the API is running."
-          : err instanceof ApiError
-            ? (err as ApiError).message
-            : 'Something went wrong while searching.',
-      );
-      setProducts([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [attachment.uri]);
+    search({ text: q, imageUri: img });
+  }, [attachment.uri, search]);
 
   const handleClear = () => {
     setQuery('');
-    setError(null);
     inputRef.current?.focus();
   };
 
@@ -175,8 +167,8 @@ export default function BrowseScreen() {
       {showResult && (
         <View style={styles.countBar}>
           <Text style={styles.countText}>
-            <Text style={styles.countBold}>{products.length}</Text>
-            {products.length === 1 ? ' result' : ' results'} for{' '}
+            <Text style={styles.countBold}>{totalElements || products.length}</Text>
+            {(totalElements || products.length) === 1 ? ' result' : ' results'} for{' '}
             <Text style={styles.countBold}>{searched}</Text>
           </Text>
         </View>
@@ -254,6 +246,11 @@ export default function BrowseScreen() {
           initialNumToRender={6}
           maxToRenderPerBatch={4}
           windowSize={5}
+          ListFooterComponent={
+            hasMore ? (
+              <LoadMoreButton onPress={loadMore} loading={loadingMore} error={loadMoreError} />
+            ) : null
+          }
         />
       )}
     </View>

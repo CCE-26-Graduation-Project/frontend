@@ -1,6 +1,24 @@
 import { Platform } from 'react-native';
 import { postMultipart } from './apiClient';
-import type { SearchResult } from './types';
+import type { SearchPage } from './types';
+
+// An empty page used as a safe default for blank queries or a malformed response,
+// so callers can always read `.content` / `.totalPages` without null checks.
+const EMPTY_PAGE: SearchPage = {
+  content: [],
+  page: 0,
+  pageSize: 0,
+  totalElements: 0,
+  totalPages: 0,
+};
+
+// The backend returns a paginated SearchPageDto ({ content, page, totalPages, ... }).
+// All three search variants POST the same form and differ only in which parts they
+// attach, so the actual request lives here. `page` is a zero-based page index.
+async function postSearch(form: FormData, page: number): Promise<SearchPage> {
+  const pageDto = await postMultipart<SearchPage>(`${SEARCH_PATH}?page=${page}`, form);
+  return pageDto ?? EMPTY_PAGE;
+}
 
 /**
  * SEARCH SERVICE  —  WIRED to springboot-api.
@@ -9,7 +27,8 @@ import type { SearchResult } from './types';
  *   form parts (both optional, but at least one required):
  *     • text → matched against the product TEXT embedding   (DB column: txt_emb)
  *     • file → matched against the product IMAGE embedding  (DB column: img_emb)
- *   returns: SearchResult[]  =  [{ productId, similarity }, ...]
+ *   query param:  ?page=N  (zero-based; PAGE_SIZE is fixed at 20 on the backend)
+ *   returns: SearchPage  =  { content: SearchResult[], page, pageSize, totalElements, totalPages }
  *   (springboot-api/.../api/SearchController.java → SearchService.search)
  *
  * Connected to:
@@ -27,13 +46,13 @@ const SEARCH_PATH = '/api/public/search';
 // To remove text search later, delete this function AND the text branch of
 // searchMultimodal below. See the embedding note in services/types.ts.
 // ════════════════════════════════════════════════════════════════════════════════
-export async function searchByText(text: string): Promise<SearchResult[]> {
+export async function searchByText(text: string, page = 0): Promise<SearchPage> {
   const trimmed = text.trim();
-  if (!trimmed) return [];
+  if (!trimmed) return EMPTY_PAGE;
 
   const form = new FormData();
   form.append('text', trimmed);
-  return postMultipart<SearchResult[]>(SEARCH_PATH, form);
+  return postSearch(form, page);
 }
 
 // ════════════════════════════════════════════════════════════════════════════════
@@ -41,17 +60,17 @@ export async function searchByText(text: string): Promise<SearchResult[]> {
 // To remove image search later, delete this function AND the image branch of
 // searchMultimodal below, AND the camera wiring in app/(tabs)/camera.tsx.
 // ════════════════════════════════════════════════════════════════════════════════
-export async function searchByImage(imageUri: string): Promise<SearchResult[]> {
+export async function searchByImage(imageUri: string, page = 0): Promise<SearchPage> {
   const form = new FormData();
   await appendImagePart(form, imageUri);
-  return postMultipart<SearchResult[]>(SEARCH_PATH, form);
+  return postSearch(form, page);
 }
 
 // ════════════════════════════════════════════════════════════════════════════════
 // MULTIMODAL SEARCH  (uses BOTH txt_emb + img_emb; backend averages the two scores)
 // If you drop one embedding, delete the matching branch here as noted above.
 // ════════════════════════════════════════════════════════════════════════════════
-export async function searchMultimodal(text: string, imageUri: string): Promise<SearchResult[]> {
+export async function searchMultimodal(text: string, imageUri: string, page = 0): Promise<SearchPage> {
   const form = new FormData();
 
   const trimmed = text.trim();
@@ -61,7 +80,7 @@ export async function searchMultimodal(text: string, imageUri: string): Promise<
 
   await appendImagePart(form, imageUri); // ← image branch (img_emb)
 
-  return postMultipart<SearchResult[]>(SEARCH_PATH, form);
+  return postSearch(form, page);
 }
 
 // ─── small helpers for image parts ───────────────────────────────────────────────
