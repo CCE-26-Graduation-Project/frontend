@@ -1,0 +1,150 @@
+{
+  "$metadata": {
+    "tokenSetOrder": ["global"]
+  },
+  "$themes": [],
+  "global": {
+    "color": {
+      "cream": {
+        "bg":      { "value": "#FAFAF7", "type": "color", "description": "App background (theme.colors.bg1)" },
+        "peach":   { "value": "#FFEBCC", "type": "color", "description": "Secondary surface / chips (bg2)" },
+        "surface": { "value": "#FFF9D2", "type": "color", "description": "Card surface (surface)" }
+      },
+      "blue": {
+        "accent":     { "value": "#8CC0EB", "type": "color", "description": "Primary accent (accent)" },
+        "accentDeep": { "value": "#4A90C7", "type": "color", "description": "Active accent (accentDeep)" }
+      },
+      "ink": {
+        "navy":     { "value": "#1E2B4D", "type": "color", "description": "Primary text / ink (text1 / accentInk)" },
+        "deepNavy": { "value": "#0D0B61", "type": "color", "description": "Bottom-nav background (navy)" }
+      },
+      "green": {
+        "savings": { "value": "#3FA66B", "type": "color", "description": "Price / savings green (savings)" }
+      },
+      "gray": {
+        "textMuted": { "value": "#6F7480", "type": "color", "description": "Secondary text (text2)" },
+        "divider":   { "value": "#EAE6D8", "type": "color", "description": "Hairline divider (divider)" }
+      },
+      "red": {
+        "error": { "value": "#E07A5F", "type": "color", "description": "Error state (error)" }
+      },
+      "base": {
+        "white": { "value": "#FFFFFF", "type": "color", "description": "Pure white (white)" }
+      }
+    },
+
+    "bg": {
+      "primary":   { "value": "{color.cream.bg}",      "type": "color", "description": "Screen background" },
+      "secondary": { "value": "{color.cream.peach}",   "type": "color", "description": "Chips, pills, secondary surfaces" }
+    },
+    "surface":      { "value": "{color.cream.surface}", "type": "color", "description": "Card / sheet surface" },
+    "accent": {
+      "default": { "value": "{color.blue.accent}",     "type": "color", "description": "Accent / focus" },
+      "deep":    { "value": "{color.blue.accentDeep}",  "type": "color", "description": "Active accent" }
+    },
+    "text": {
+      "primary":   { "value": "{color.ink.navy}",       "type": "color", "description": "Primary text" },
+      "secondary": { "value": "{color.gray.textMuted}", "type": "color", "description": "Secondary / muted text" }
+    },
+    "price":   { "value": "{color.green.savings}",  "type": "color", "description": "Price + savings text" },
+    "border":  {
+      "divider": { "value": "{color.gray.divider}", "type": "color", "description": "Hairline borders" }
+    },
+    "error":   { "value": "{color.red.error}",      "type": "color", "description": "Error" },
+    "nav":     {
+      "background": { "value": "{color.ink.deepNavy}", "type": "color", "description": "Floating bottom nav" }
+    },
+    "white":   { "value": "{color.base.white}",     "type": "color", "description": "White" },
+
+    "spacing": {
+      "s1":  { "value": "4",  "type": "spacing" },
+      "s2":  { "value": "8",  "type": "spacing" },
+      "s3":  { "value": "12", "type": "spacing" },
+      "s4":  { "value": "16", "type": "spacing" },
+      "s5":  { "value": "20", "type": "spacing" },
+      "s6":  { "value": "24", "type": "spacing" },
+      "s8":  { "value": "32", "type": "spacing" },
+      "s10": { "value": "40", "type": "spacing" },
+      "s12": { "value": "48", "type": "spacing" }
+    },
+
+    "radius": {
+      "chip":    { "value": "8",   "type": "borderRadius" },
+      "compact": { "value": "12",  "type": "borderRadius" },
+      "card":    { "value": "16",  "type": "borderRadius" },
+      "nav":     { "value": "24",  "type": "borderRadius" },
+      "pill":    { "value": "999", "type": "borderRadius" }
+    },
+
+    "fontFamily": {
+      "base": { "value": "Inter", "type": "fontFamilies", "description": "Figma stand-in for the native iOS/Android system font used in-app" }
+    },
+    "fontWeight": {
+      "regular":  { "value": "Regular",   "type": "fontWeights" },
+      "semibold": { "value": "Semi Bold", "type": "fontWeights" },
+      "bold":     { "value": "Bold",      "type": "fontWeights" }
+    },
+
+    "type": {
+      "display": {
+        "value": { "fontFamily": "{fontFamily.base}", "fontWeight": "{fontWeight.bold}",     "fontSize": "34", "lineHeight": "AUTO", "letterSpacing": "-0.4" },
+        "type": "typography", "description": "Largest heading"
+      },
+      "title1": {
+        "value": { "fontFamily": "{fontFamily.base}", "fontWeight": "{fontWeight.bold}",     "fontSize": "28", "lineHeight": "AUTO", "letterSpacing": "-0.3" },
+        "type": "typography"
+      },
+      "title2": {
+        "value": { "fontFamily": "{fontFamily.base}", "fontWeight": "{fontWeight.bold}",     "fontSize": "22", "lineHeight": "AUTO", "letterSpacing": "-0.26" },
+        "type": "typography"
+      },
+      "title3": {
+        "value": { "fontFamily": "{fontFamily.base}", "fontWeight": "{fontWeight.semibold}", "fontSize": "20", "lineHeight": "AUTO", "letterSpacing": "-0.24" },
+        "type": "typography"
+      },
+      "headline": {
+        "value": { "fontFamily": "{fontFamily.base}", "fontWeight": "{fontWeight.semibold}", "fontSize": "17", "lineHeight": "AUTO", "letterSpacing": "-0.08" },
+        "type": "typography"
+      },
+      "body": {
+        "value": { "fontFamily": "{fontFamily.base}", "fontWeight": "{fontWeight.regular}",  "fontSize": "17", "lineHeight": "AUTO", "letterSpacing": "-0.08" },
+        "type": "typography"
+      },
+      "callout": {
+        "value": { "fontFamily": "{fontFamily.base}", "fontWeight": "{fontWeight.regular}",  "fontSize": "16", "lineHeight": "AUTO", "letterSpacing": "-0.06" },
+        "type": "typography"
+      },
+      "subheadline": {
+        "value": { "fontFamily": "{fontFamily.base}", "fontWeight": "{fontWeight.regular}",  "fontSize": "15", "lineHeight": "AUTO", "letterSpacing": "-0.04" },
+        "type": "typography"
+      },
+      "footnote": {
+        "value": { "fontFamily": "{fontFamily.base}", "fontWeight": "{fontWeight.regular}",  "fontSize": "13", "lineHeight": "AUTO", "letterSpacing": "0" },
+        "type": "typography"
+      },
+      "caption": {
+        "value": { "fontFamily": "{fontFamily.base}", "fontWeight": "{fontWeight.regular}",  "fontSize": "12", "lineHeight": "AUTO", "letterSpacing": "0" },
+        "type": "typography"
+      }
+    },
+
+    "shadow": {
+      "rest": {
+        "value": { "x": "0", "y": "1", "blur": "4",  "spread": "0", "color": "rgba(30,43,77,0.06)", "type": "dropShadow" },
+        "type": "boxShadow", "description": "Resting elevation"
+      },
+      "card": {
+        "value": { "x": "0", "y": "2", "blur": "12", "spread": "0", "color": "rgba(30,43,77,0.10)", "type": "dropShadow" },
+        "type": "boxShadow", "description": "Cards"
+      },
+      "floating": {
+        "value": { "x": "0", "y": "8", "blur": "24", "spread": "0", "color": "rgba(30,43,77,0.22)", "type": "dropShadow" },
+        "type": "boxShadow", "description": "Floating / modal elements"
+      },
+      "nav": {
+        "value": { "x": "0", "y": "4", "blur": "20", "spread": "0", "color": "rgba(13,11,97,0.30)", "type": "dropShadow" },
+        "type": "boxShadow", "description": "Bottom navigation bar"
+      }
+    }
+  }
+}

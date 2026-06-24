@@ -1,0 +1,302 @@
+{
+  "app.json": {
+    "mtime": 1780699853.248668,
+    "ast_hash": "b67ea0b388470ba446e00fe4059ae508",
+    "semantic_hash": ""
+  },
+  "app/(tabs)/_layout.tsx": {
+    "mtime": 1781446578.6139176,
+    "ast_hash": "9ea5ab4bb8a79ec412c4b68680124ec9",
+    "semantic_hash": ""
+  },
+  "app/(tabs)/alerts.tsx": {
+    "mtime": 1779324425.6546836,
+    "ast_hash": "eadc027c077d7bb6887617909c326661",
+    "semantic_hash": ""
+  },
+  "app/(tabs)/browse.tsx": {
+    "mtime": 1782035232.1172564,
+    "ast_hash": "1a16cf7b4e1b638e8fbaadf1594eb2c2",
+    "semantic_hash": ""
+  },
+  "app/(tabs)/camera.tsx": {
+    "mtime": 1780699881.1359565,
+    "ast_hash": "a75002c20a942240d26ba6d9c91f15b9",
+    "semantic_hash": ""
+  },
+  "app/(tabs)/fav.tsx": {
+    "mtime": 1781447529.8999808,
+    "ast_hash": "014bad1bee529d3b51b38258c452cabb",
+    "semantic_hash": ""
+  },
+  "app/(tabs)/index.tsx": {
+    "mtime": 1782036031.684056,
+    "ast_hash": "3121b741b1ca534dabc0d6f7a72a07bc",
+    "semantic_hash": ""
+  },
+  "app/(tabs)/profile.tsx": {
+    "mtime": 1781447651.3725762,
+    "ast_hash": "ec01b4d365cf63952aa75968f3da05eb",
+    "semantic_hash": ""
+  },
+  "app/_layout.tsx": {
+    "mtime": 1780847825.420752,
+    "ast_hash": "93b0c5836f1e5e2c0ec8a4ffb0d91d2e",
+    "semantic_hash": ""
+  },
+  "app/notifications.tsx": {
+    "mtime": 1780847819.5282464,
+    "ast_hash": "9859108f9704fc422127650830ef900b",
+    "semantic_hash": ""
+  },
+  "app/product/[id].tsx": {
+    "mtime": 1781913142.5657878,
+    "ast_hash": "6aaa64fa86627ac3c9915e135ce202a4",
+    "semantic_hash": ""
+  },
+  "app/results.tsx": {
+    "mtime": 1782035191.2624273,
+    "ast_hash": "888d5b7bf6b3c2b0c60a9b094f6d26f0",
+    "semantic_hash": ""
+  },
+  "app/search.tsx": {
+    "mtime": 1780934656.358361,
+    "ast_hash": "0efd7ba80947e5eb395192e7c4d9c203",
+    "semantic_hash": ""
+  },
+  "assets/character/Snoop.jsx": {
+    "mtime": 1779286033.529244,
+    "ast_hash": "b2893d25932a1d7db040d145630a9c5b",
+    "semantic_hash": ""
+  },
+  "babel.config.js": {
+    "mtime": 1779324136.1229613,
+    "ast_hash": "8fc7a520543679a79421ba4e2dbcfe90",
+    "semantic_hash": ""
+  },
+  "components/AttachmentPreview.tsx": {
+    "mtime": 1780934577.0573626,
+    "ast_hash": "8cc862f2b79e894be9d47ce0cf2423ea",
+    "semantic_hash": ""
+  },
+  "components/BottomNav.tsx": {
+    "mtime": 1782036102.4849353,
+    "ast_hash": "d9a79c4231dfe38c63a1d40812ac2b53",
+    "semantic_hash": ""
+  },
+  "components/CategoryCard.tsx": {
+    "mtime": 1779324317.9152036,
+    "ast_hash": "e8bf1400d86bab5bc4beac1be3a27dce",
+    "semantic_hash": ""
+  },
+  "components/Icon.tsx": {
+    "mtime": 1779324203.8379562,
+    "ast_hash": "93d1917a79c700c12b3ae9313b4a8aee",
+    "semantic_hash": ""
+  },
+  "components/LoadMoreButton.tsx": {
+    "mtime": 1782035142.9097526,
+    "ast_hash": "93bfc0cff40be5d32489c5c259539ad1",
+    "semantic_hash": ""
+  },
+  "components/ProductCard.tsx": {
+    "mtime": 1781447508.49423,
+    "ast_hash": "4d64994c4c347f666c3b6e4e70a813f9",
+    "semantic_hash": ""
+  },
+  "components/ProductListCard.tsx": {
+    "mtime": 1779324306.2205453,
+    "ast_hash": "7f1de637e753a788e2fb711ebf84248b",
+    "semantic_hash": ""
+  },
+  "components/ProductPlaceholder.tsx": {
+    "mtime": 1779324265.6208131,
+    "ast_hash": "cdeb1ff4cc206d23550160492c858980",
+    "semantic_hash": ""
+  },
+  "components/RecentChip.tsx": {
+    "mtime": 1779324339.3909771,
+    "ast_hash": "ce84cf581e71d83ec2014cf71d31358d",
+    "semantic_hash": ""
+  },
+  "components/SearchBar.tsx": {
+    "mtime": 1779324614.54652,
+    "ast_hash": "4284449b534b403f7b81b3d0729a2fdf",
+    "semantic_hash": ""
+  },
+  "components/SnoopCharacter.tsx": {
+    "mtime": 1779324241.6048377,
+    "ast_hash": "b4eb23bf7b114414ec1710645654ae5f",
+    "semantic_hash": ""
+  },
+  "components/TopNav.tsx": {
+    "mtime": 1781446612.315896,
+    "ast_hash": "f624e7c39279db7ac2516c7031ee1f36",
+    "semantic_hash": ""
+  },
+  "components/TrendingCard.tsx": {
+    "mtime": 1781447512.4465442,
+    "ast_hash": "95b4f2e8fc9931ae36c519f44f6229d8",
+    "semantic_hash": ""
+  },
+  "constants/data.ts": {
+    "mtime": 1781447490.281879,
+    "ast_hash": "0bb2c31da388d90dfe1c1e4c750ed46e",
+    "semantic_hash": ""
+  },
+  "constants/theme.ts": {
+    "mtime": 1779324159.5881782,
+    "ast_hash": "5cf3acafd36e6948d62bcbf0a2361d3a",
+    "semantic_hash": ""
+  },
+  "contexts/FavouritesContext.tsx": {
+    "mtime": 1781447565.122219,
+    "ast_hash": "4f9add44bcf04ad441af7e036f088a61",
+    "semantic_hash": ""
+  },
+  "hooks/useImageAttachment.ts": {
+    "mtime": 1780934567.0665374,
+    "ast_hash": "3eb0d381aead9b0e73637b952fb222f1",
+    "semantic_hash": ""
+  },
+  "hooks/usePaginatedSearch.ts": {
+    "mtime": 1782035127.6110282,
+    "ast_hash": "70f099fa90b3775ad9a5c88035aa27d9",
+    "semantic_hash": ""
+  },
+  "metro.config.js": {
+    "mtime": 1779324139.9234495,
+    "ast_hash": "8197d00613ea53228cbf25ca9acc6b10",
+    "semantic_hash": ""
+  },
+  "package.json": {
+    "mtime": 1780699571.8659527,
+    "ast_hash": "bf61782d12dde3701071beb225c210de",
+    "semantic_hash": ""
+  },
+  "screens/design-canvas.jsx": {
+    "mtime": 1779286033.6938386,
+    "ast_hash": "70cb8312131a9b19739f89eefafa50b3",
+    "semantic_hash": ""
+  },
+  "services/apiClient.ts": {
+    "mtime": 1781445128.6650825,
+    "ast_hash": "642b3422d58fbc64a766085cafedb60c",
+    "semantic_hash": ""
+  },
+  "services/auth.ts": {
+    "mtime": 1780696146.6587424,
+    "ast_hash": "d1a0342d1508bf1eb42c382216347d2c",
+    "semantic_hash": ""
+  },
+  "services/config.ts": {
+    "mtime": 1781835927.4690573,
+    "ast_hash": "c67d56136e487762a925ff6c49f300b7",
+    "semantic_hash": ""
+  },
+  "services/favourites.ts": {
+    "mtime": 1781447503.699219,
+    "ast_hash": "36d39b2b1f20e3492d2fd6f2f734a91a",
+    "semantic_hash": ""
+  },
+  "services/index.ts": {
+    "mtime": 1782035103.1884658,
+    "ast_hash": "7f1469b970bc3971b886c772ffa142fc",
+    "semantic_hash": ""
+  },
+  "services/products.ts": {
+    "mtime": 1782035918.9024782,
+    "ast_hash": "cc3db8370c064b5124f01b15f8556936",
+    "semantic_hash": ""
+  },
+  "services/search.ts": {
+    "mtime": 1782035097.9364624,
+    "ast_hash": "add8473ae047e09d992d242072624d69",
+    "semantic_hash": ""
+  },
+  "services/types.ts": {
+    "mtime": 1782034390.1593997,
+    "ast_hash": "131a8956fe05a4d0ba6e5abde23fccf1",
+    "semantic_hash": ""
+  },
+  "tsconfig.json": {
+    "mtime": 1779638013.59231,
+    "ast_hash": "54dc64d62868350b1d819e47e2ac8e9a",
+    "semantic_hash": ""
+  },
+  "ui_kits/ios_app/Snoop.jsx": {
+    "mtime": 1779286033.755039,
+    "ast_hash": "b2893d25932a1d7db040d145630a9c5b",
+    "semantic_hash": ""
+  },
+  "ui_kits/ios_app/components.jsx": {
+    "mtime": 1779286033.7684183,
+    "ast_hash": "4d4c3693edcec8bbbd217327c2c203d0",
+    "semantic_hash": ""
+  },
+  "ui_kits/ios_app/ios-frame.jsx": {
+    "mtime": 1779286033.7822378,
+    "ast_hash": "cfb8be183152a0cb0a575e6598192153",
+    "semantic_hash": ""
+  },
+  "ui_kits/ios_app/screens.jsx": {
+    "mtime": 1779286033.7862508,
+    "ast_hash": "a3e3d18a87f502297b1f088b72456c24",
+    "semantic_hash": ""
+  },
+  "README.md": {
+    "mtime": 1779327713.5897658,
+    "ast_hash": "c9b67ae5d38efeb0b3f77399ad169195",
+    "semantic_hash": ""
+  },
+  "screens/index.html": {
+    "mtime": 1779286033.699854,
+    "ast_hash": "d8448b35fd9bd2d4b1bd325358154b31",
+    "semantic_hash": ""
+  },
+  "services/README.md": {
+    "mtime": 1780696459.8173583,
+    "ast_hash": "debd4873e6fd8401609232141854b5a6",
+    "semantic_hash": ""
+  },
+  "ui_kits/ios_app/index.html": {
+    "mtime": 1779286033.7763205,
+    "ast_hash": "6f22831689d00b4363c8d66237d6cc54",
+    "semantic_hash": ""
+  },
+  "assets/icons/compare-prices.svg": {
+    "mtime": 1779286033.5402143,
+    "ast_hash": "f43d7d2004188fcd3985244e14c5144e",
+    "semantic_hash": ""
+  },
+  "assets/icons/compare-source.png": {
+    "mtime": 1779286033.5449812,
+    "ast_hash": "41116acedd6da7a2dfc3dedc5325f893",
+    "semantic_hash": ""
+  },
+  "assets/images/products/iphone17_img1.jpg": {
+    "mtime": 1779669260.8898797,
+    "ast_hash": "ac683d9dcb918b48f9534970e1c1dbef",
+    "semantic_hash": ""
+  },
+  "assets/images/products/iphone17_img2.jpg": {
+    "mtime": 1779669283.3973029,
+    "ast_hash": "995f7952fbbfb0733d108cc8557d6fa8",
+    "semantic_hash": ""
+  },
+  "assets/images/products/iphone17_img3.jpg": {
+    "mtime": 1779669297.3564622,
+    "ast_hash": "26c3951dfa5ca4aae4be14d99c602c48",
+    "semantic_hash": ""
+  },
+  "assets/logo/snoop-monogram.svg": {
+    "mtime": 1779286033.5564303,
+    "ast_hash": "8a7138915701b5b77fa008cf8748481d",
+    "semantic_hash": ""
+  },
+  "assets/logo/snoop-wordmark.svg": {
+    "mtime": 1779286033.5626976,
+    "ast_hash": "bf7747c6add2ac002216fd29c441cb50",
+    "semantic_hash": ""
+  }
+}

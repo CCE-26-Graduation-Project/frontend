@@ -16,7 +16,12 @@
       "Bash(python .claude/skills/ui-ux-pro-max/scripts/search.py \"ecommerce mobile product detail minimal clean\" --design-system -p \"Snoop\")",
       "Bash(python .claude/skills/ui-ux-pro-max/scripts/search.py \"mobile two column layout animation touch\" --domain ux)",
       "Bash(python .claude/skills/ui-ux-pro-max/scripts/search.py \"animation micro-interaction button feedback\" --domain ux)",
-      "Bash(graphify --help)"
+      "Bash(graphify --help)",
+      "Bash(graphify update *)",
+      "mcp__plugin_figma_figma__whoami",
+      "mcp__plugin_figma_figma__create_new_file",
+      "mcp__plugin_figma_figma__use_figma",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('design/snoop.tokens.json','utf8'\\)\\); console.log\\('JSON valid ✓'\\)\")"
     ]
   },
   "enabledPlugins": {
