@@ -14,8 +14,8 @@ interface Props {
 function ProductCardInner({ product, onPress }: Props) {
   const { toggleFavourite, isFavourite } = useFavourites();
   const saved = isFavourite(product.id);
-  const { name, store, storeLogo, price, oldPrice, discountPct, tone, imageUrls, category } = product;
-  const primaryImage = imageUrls?.[0];
+  const { name, store, storeLogo, price, oldPrice, discountPct, tone, imageUrl, imageUrls, category } = product;
+  const primaryImage = imageUrl ?? imageUrls?.[0];
 
   return (
     <Pressable onPress={onPress} style={styles.card}>

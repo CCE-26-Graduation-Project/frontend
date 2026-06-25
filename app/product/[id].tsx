@@ -34,18 +34,14 @@ export default function ProductDetailScreen() {
     store: string;
     storeLogo: string;
     category: string;
+    imageUrl: string;
     imageUrls: string; // JSON.stringify(string[])
     productUrl: string;
     oldPrice: string;
     discountPct: string;
   }>();
 
-  const { toggleFavourite, isFavourite } = useFavourites();
-  const saveScaleAnim = useRef(new Animated.Value(1)).current;
-  const captionAnim   = useRef(new Animated.Value(0)).current;
-  const captionTimer  = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [activeIndex, setActiveIndex] = useState(0);
-
+  // Parse all image data first so hooks below can reference allImages
   const id          = params.id ?? '';
   const name        = params.name ?? 'Product';
   const price       = params.price ?? '';
@@ -55,9 +51,41 @@ export default function ProductDetailScreen() {
   const productUrl  = params.productUrl ?? '';
   const oldPrice    = params.oldPrice ?? '';
   const discountPct = params.discountPct ? parseInt(params.discountPct, 10) : null;
+  const imageUrl    = params.imageUrl ?? '';
 
   let imageUrls: string[] = [];
   try { imageUrls = JSON.parse(params.imageUrls ?? '[]'); } catch { imageUrls = []; }
+
+  // imageUrl first, then imageUrls — fully deduplicated so key={uri} is always unique
+  const _seen = new Set<string>();
+  const allImages: string[] = [];
+  if (imageUrl) { _seen.add(imageUrl); allImages.push(imageUrl); }
+  for (const u of imageUrls) {
+    if (u && !_seen.has(u)) { _seen.add(u); allImages.push(u); }
+  }
+
+  const { toggleFavourite, isFavourite } = useFavourites();
+  const saveScaleAnim = useRef(new Animated.Value(1)).current;
+  const captionAnim   = useRef(new Animated.Value(0)).current;
+  const captionTimer  = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+  // Start with the primary image (already cached from search results), then reveal
+  // additional images one by one so the user never waits for the gallery to initialize.
+  const [visibleImages, setVisibleImages] = useState<string[]>(
+    allImages.length > 0 ? [allImages[0]] : []
+  );
+
+  useEffect(() => {
+    if (allImages.length <= 1) return;
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    allImages.slice(1).forEach((uri, idx) => {
+      timers.push(
+        setTimeout(() => setVisibleImages(prev => [...prev, uri]), (idx + 1) * 180)
+      );
+    });
+    return () => timers.forEach(clearTimeout);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const saved = isFavourite(id);
 
@@ -74,6 +102,7 @@ export default function ProductDetailScreen() {
   function handleSave() {
     const product = {
       id, name, store, storeLogo, price,
+      imageUrl: imageUrl || undefined,
       imageUrls: imageUrls.length > 0 ? imageUrls : undefined,
       category: category || undefined,
       productUrl: productUrl || undefined,
@@ -107,7 +136,7 @@ export default function ProductDetailScreen() {
     setActiveIndex(index);
   }
 
-  const hasImages = imageUrls.length > 0;
+  const hasImages = allImages.length > 0;
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.colors.bg1 }]}>
@@ -130,12 +159,13 @@ export default function ProductDetailScreen() {
               onMomentumScrollEnd={handleGalleryScroll}
               style={styles.galleryScroll}
             >
-              {imageUrls.map((uri, idx) => (
+              {visibleImages.map((uri, idx) => (
                 <Image
-                  key={idx}
+                  key={uri}
                   source={{ uri }}
                   style={styles.galleryImage}
                   resizeMode="contain"
+                  fadeDuration={idx === 0 ? 0 : 200}
                 />
               ))}
             </ScrollView>
@@ -144,10 +174,17 @@ export default function ProductDetailScreen() {
           )}
 
           {/* Dot indicators — only when there are multiple images */}
-          {hasImages && imageUrls.length > 1 && (
+          {hasImages && allImages.length > 1 && (
             <View style={styles.dotsRow}>
-              {imageUrls.map((_, idx) => (
-                <View key={idx} style={[styles.dot, idx === activeIndex && styles.dotActive]} />
+              {allImages.map((_, idx) => (
+                <View
+                  key={idx}
+                  style={[
+                    styles.dot,
+                    idx === activeIndex && styles.dotActive,
+                    idx >= visibleImages.length && styles.dotPending,
+                  ]}
+                />
               ))}
             </View>
           )}
@@ -266,6 +303,9 @@ const styles = StyleSheet.create({
   dotActive: {
     backgroundColor: theme.colors.text1,
     width: 18,
+  },
+  dotPending: {
+    opacity: 0.25,
   },
 
   // Info section

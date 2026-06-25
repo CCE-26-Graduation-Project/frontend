@@ -32,7 +32,8 @@
           "photosPermission": "Snoop uses your photos to search for products by image.",
           "cameraPermission": "Snoop uses your camera to search for products by photo."
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true

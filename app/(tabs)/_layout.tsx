@@ -16,7 +16,11 @@ export default function TabsLayout() {
       <Tabs
         screenOptions={{
           headerShown: false,
-          tabBarStyle: { display: 'none' }, // default bar hidden; we render our own
+          // Hide the default tab bar; BottomNav is rendered via the tabBar prop below.
+          tabBarStyle: { display: 'none', backgroundColor: 'transparent' },
+          // Remove React Navigation's own background surface behind the tab bar area
+          // so our transparent BottomNav container doesn't have an opaque backdrop.
+          tabBarBackground: () => null,
         }}
         // On web we render no bottom bar (TopNav handles navigation);
         // on native, BottomNav renders as before.

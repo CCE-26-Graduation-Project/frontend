@@ -31,4 +31,5 @@ export {
   removeFavourite,
   favouriteToProduct,
 } from './favourites';
-export { signUp, signIn, signOut, isSignedIn } from './auth';
+export { signUp, signIn, signOut, isSignedIn, getSignedInUser, AuthError } from './auth';
+export { getAccessToken, isTokenValid } from './tokenStore';

@@ -10,6 +10,7 @@ export interface Product {
   discountPct?: number;
   tone: ProductTone;
   saved?: boolean;
+  imageUrl?: string;
   imageUrls?: string[];
   category?: string;
   productUrl?: string;

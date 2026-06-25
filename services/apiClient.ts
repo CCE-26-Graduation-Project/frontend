@@ -1,4 +1,6 @@
 import { config } from './config';
+import { getAccessToken, getRefreshToken, refreshAccessToken } from './tokenStore';
+import { emitSessionExpired } from './sessionEvents';
 
 /**
  * Low-level HTTP layer shared by every service module (auth, search, products).
@@ -39,6 +41,8 @@ interface RequestOptions {
   /** Send SuperTokens session cookies with the request. Default: true. */
   withCredentials?: boolean;
   signal?: AbortSignal;
+  /** Internal flag — prevents recursive retry after token refresh. */
+  _retried?: boolean;
 }
 
 /**
@@ -48,6 +52,16 @@ interface RequestOptions {
 async function request<T>(method: string, path: string, options: RequestOptions = {}): Promise<T> {
   const baseUrl = options.baseUrl ?? config.apiBaseUrl;
   const url = `${baseUrl}${path}`;
+
+  // For all springboot-api requests, attach the stored JWT as a Bearer token so
+  // Spring Security can authenticate the user on /api/secure/** endpoints and
+  // optionally enrich public /api/public/** responses with isFavourite state.
+  const headers: Record<string, string> = { ...options.headers };
+  const isSpringApi = !options.baseUrl || options.baseUrl === config.apiBaseUrl;
+  if (isSpringApi) {
+    const token = await getAccessToken();
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+  }
 
   // Per-request timeout via AbortController (React Native fetch supports this).
   const controller = new AbortController();
@@ -62,9 +76,8 @@ async function request<T>(method: string, path: string, options: RequestOptions 
   try {
     response = await fetch(url, {
       method,
-      headers: options.headers,
+      headers,
       body: options.body,
-      // 'include' sends the SuperTokens session cookie so secure endpoints work.
       credentials: options.withCredentials === false ? 'omit' : 'include',
       signal: controller.signal,
     });
@@ -86,6 +99,22 @@ async function request<T>(method: string, path: string, options: RequestOptions 
   }
 
   if (!response.ok) {
+    // On 401 from the springboot-api, attempt a token refresh and retry the
+    // request once. Only do this when we actually had a refresh token (i.e.
+    // the user was signed in) to avoid spurious session-expired modals for
+    // unauthenticated users hitting public endpoints that happen to 401.
+    if (response.status === 401 && isSpringApi && !options._retried) {
+      const hasRefreshToken = !!(await getRefreshToken());
+      if (hasRefreshToken) {
+        const refreshed = await refreshAccessToken();
+        if (refreshed) {
+          return request<T>(method, path, { ...options, _retried: true });
+        }
+        // Refresh failed — session is fully expired; show the global modal.
+        emitSessionExpired();
+      }
+    }
+
     // Spring/Node error handlers return { "error": "..." }; fall back to a generic message.
     let message = `HTTP ${response.status} on ${path}`;
     if (parsed && typeof parsed === 'object' && 'error' in parsed) {

@@ -14,7 +14,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { SnoopCharacter } from '../../components/SnoopCharacter';
 import { theme } from '../../constants/theme';
-import { isSignedIn, signIn, signUp, signOut } from '../../services/auth';
+import { signIn, signUp, signOut, getSignedInUser, AuthError } from '../../services/auth';
+import { NetworkError } from '../../services/apiClient';
 import { useFavourites } from '../../contexts/FavouritesContext';
 import type { AuthUser } from '../../services/types';
 
@@ -31,7 +32,7 @@ type FormMode = 'signin' | 'signup';
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
-  const { favourites } = useFavourites();
+  const { favourites, reloadFavourites, clearFavourites } = useFavourites();
 
   const [authState, setAuthState] = useState<AuthState>('loading');
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -41,10 +42,18 @@ export default function ProfileScreen() {
   const [formError, setFormError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  // Check session on mount
+  // On mount: check stored JWT validity without a network call.
+  // If valid, restore the user object from secure storage.
   useEffect(() => {
-    isSignedIn()
-      .then((yes) => setAuthState(yes ? 'signedIn' : 'signedOut'))
+    getSignedInUser()
+      .then((u) => {
+        if (u) {
+          setUser(u);
+          setAuthState('signedIn');
+        } else {
+          setAuthState('signedOut');
+        }
+      })
       .catch(() => setAuthState('signedOut'));
   }, []);
 
@@ -61,12 +70,19 @@ export default function ProfileScreen() {
       setAuthState('signedIn');
       setEmail('');
       setPassword('');
-    } catch {
-      setFormError('Invalid email or password. Please try again.');
+      reloadFavourites(); // background — don't await, don't block the UI
+    } catch (err) {
+      if (err instanceof AuthError) {
+        setFormError(err.message);
+      } else if (err instanceof NetworkError) {
+        setFormError('Cannot reach the server. Check your internet connection and try again.');
+      } else {
+        setFormError('Sign in failed. Please try again.');
+      }
     } finally {
       setSubmitting(false);
     }
-  }, [email, password]);
+  }, [email, password, reloadFavourites]);
 
   const handleSignUp = useCallback(async () => {
     if (!email.trim() || !password) {
@@ -85,26 +101,32 @@ export default function ProfileScreen() {
       setAuthState('signedIn');
       setEmail('');
       setPassword('');
-    } catch {
-      setFormError('Could not create account. The email may already be in use.');
+      reloadFavourites();
+    } catch (err) {
+      if (err instanceof AuthError) {
+        setFormError(err.message);
+      } else if (err instanceof NetworkError) {
+        setFormError('Cannot reach the server. Check your internet connection and try again.');
+      } else {
+        setFormError('Could not create account. Please try again.');
+      }
     } finally {
       setSubmitting(false);
     }
-  }, [email, password]);
+  }, [email, password, reloadFavourites]);
 
   const handleSignOut = useCallback(async () => {
     try {
       await signOut();
     } catch {
-      // Best-effort — clear local state regardless
+      // best-effort — always clear local state
     }
+    clearFavourites();
     setUser(null);
     setAuthState('signedOut');
-  }, []);
+  }, [clearFavourites]);
 
-  const displayName = user?.email
-    ? user.email.split('@')[0]
-    : null;
+  const displayName = user?.email ? user.email.split('@')[0] : null;
 
   // ── Loading ───────────────────────────────────────────────────────────────
   if (authState === 'loading') {
@@ -175,7 +197,7 @@ export default function ProfileScreen() {
                 placeholder="Email"
                 placeholderTextColor={theme.colors.text2}
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={(t) => { setEmail(t); setFormError(''); }}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -189,7 +211,7 @@ export default function ProfileScreen() {
                 placeholder="Password"
                 placeholderTextColor={theme.colors.text2}
                 value={password}
-                onChangeText={setPassword}
+                onChangeText={(t) => { setPassword(t); setFormError(''); }}
                 secureTextEntry
                 returnKeyType="done"
                 onSubmitEditing={formMode === 'signin' ? handleSignIn : handleSignUp}
@@ -197,7 +219,10 @@ export default function ProfileScreen() {
             </View>
 
             {formError ? (
-              <Text style={styles.errorText}>{formError}</Text>
+              <View style={styles.errorBox}>
+                <Feather name="alert-circle" size={14} color="#E53935" />
+                <Text style={styles.errorText}>{formError}</Text>
+              </View>
             ) : null}
 
             <Pressable
@@ -244,16 +269,10 @@ export default function ProfileScreen() {
 
         {/* Stats */}
         <View style={styles.statsRow}>
-          {[
-            [String(favourites.length), 'Favourites'],
-            ['47', 'Stores checked'],
-            ['0', 'Alerts set'],
-          ].map(([val, lbl]) => (
-            <View key={lbl} style={styles.stat}>
-              <Text style={styles.statVal}>{val}</Text>
-              <Text style={styles.statLbl}>{lbl}</Text>
-            </View>
-          ))}
+          <View style={styles.stat}>
+            <Text style={styles.statVal}>{String(favourites.length)}</Text>
+            <Text style={styles.statLbl}>Favourites</Text>
+          </View>
         </View>
 
         {/* Menu */}
@@ -371,10 +390,18 @@ const styles = StyleSheet.create({
     color: theme.colors.text1,
     height: 50,
   },
+  errorBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 6,
+    backgroundColor: '#FEECEC',
+    borderRadius: theme.radius.compact,
+    padding: 10,
+  },
   errorText: {
+    flex: 1,
     fontSize: 13,
-    color: '#E53935',
-    textAlign: 'center',
+    color: '#C62828',
     lineHeight: 18,
   },
   submitBtn: {

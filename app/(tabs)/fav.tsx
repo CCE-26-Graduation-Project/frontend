@@ -12,7 +12,7 @@ const NAV_TOTAL_HEIGHT = 114;
 
 export default function FavScreen() {
   const insets = useSafeAreaInsets();
-  const { favourites } = useFavourites();
+  const { favourites, isAuthenticated } = useFavourites();
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.colors.bg1 }]}>
@@ -34,6 +34,24 @@ export default function FavScreen() {
             </Pressable>
           </View>
         </View>
+
+        {/* Warning banner — shown whenever the user is not signed in */}
+        {!isAuthenticated && (
+          <Pressable
+            style={styles.authBanner}
+            onPress={() => router.push('/(tabs)/profile')}
+            accessibilityRole="button"
+          >
+            <Feather name="alert-triangle" size={16} color="#92400E" />
+            <View style={styles.authBannerTextWrap}>
+              <Text style={styles.authBannerText}>
+                Favourites will be lost when you close the app.{' '}
+              </Text>
+              <Text style={styles.authBannerLink}>Log in to save your changes.</Text>
+            </View>
+            <Feather name="chevron-right" size={16} color="#92400E" />
+          </Pressable>
+        )}
 
         {favourites.length === 0 ? (
           <View style={styles.emptyState}>
@@ -67,6 +85,7 @@ export default function FavScreen() {
                           store: product.store,
                           storeLogo: product.storeLogo,
                           category: product.category ?? '',
+                          imageUrl: product.imageUrl ?? product.imageUrls?.[0] ?? '',
                           imageUrls: JSON.stringify(product.imageUrls ?? []),
                           productUrl: product.productUrl ?? '',
                           oldPrice: product.oldPrice ?? '',
@@ -113,6 +132,37 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+
+  // ── Auth warning banner ────────────────────────────────────────────────────
+  authBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginHorizontal: theme.spacing.s4,
+    marginBottom: 12,
+    backgroundColor: '#FFFBEB',
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    borderRadius: theme.radius.compact,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  authBannerTextWrap: {
+    flex: 1,
+  },
+  authBannerText: {
+    fontSize: 13,
+    color: '#78350F',
+    lineHeight: 18,
+  },
+  authBannerLink: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#92400E',
+    lineHeight: 18,
+  },
+
+  // ── Results ────────────────────────────────────────────────────────────────
   subtitle: {
     fontSize: 15,
     color: theme.colors.text2,
@@ -131,6 +181,8 @@ const styles = StyleSheet.create({
     flexShrink: 1,
     minWidth: 140,
   },
+
+  // ── Empty state ────────────────────────────────────────────────────────────
   emptyState: {
     flex: 1,
     alignItems: 'center',

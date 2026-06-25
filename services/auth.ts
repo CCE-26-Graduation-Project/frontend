@@ -1,61 +1,149 @@
-import { postJson, getJson, ApiError } from './apiClient';
 import { config } from './config';
 import type { AuthUser } from './types';
+import { NetworkError } from './apiClient';
+import { saveTokens, clearTokens, isTokenValid, saveUser, getSavedUser } from './tokenStore';
 
 /**
- * AUTH SERVICE  —  talks to node-auth (SuperTokens), NOT the springboot-api.
+ * AUTH SERVICE — talks directly to node-auth (SuperTokens) on Azure.
  *
- * Every call here targets `config.authBaseUrl` (http://localhost:3001) and relies on
- * SuperTokens' cookie-based sessions — apiClient sends credentials: 'include', so the
- * session cookies set on sign-in are returned automatically on later requests.
+ * Uses raw fetch (not apiClient) so response headers are accessible — SuperTokens
+ * delivers session tokens via `st-access-token` / `st-refresh-token` response headers
+ * (tokenTransferMethod: "header"). The JWT in st-access-token is stored in device
+ * secure storage and attached to all springboot-api requests by apiClient.ts.
  *
- * Backend routes (mounted by SuperTokens middleware at apiBasePath "/auth"):
- *   POST /auth/signup   POST /auth/signin   POST /auth/signout
- *   (backend_repo/backend/node-auth/src/index.js)
+ * Backend: backend_repo/backend/node-auth/src/index.js
+ * Deployed: https://nodeauth-gradproject.azurewebsites.net
  *
- * STATUS: there is no login/signup UI in the app yet, so nothing calls these today.
- * They are a working skeleton — wire them to a future auth screen and to
- * app/(tabs)/profile.tsx. For production, prefer the official `supertokens-react-native`
- * SDK, which adds automatic access-token refresh on top of these raw calls.
+ * SuperTokens returns HTTP 200 for BOTH success and auth errors — the actual
+ * outcome is in the body `status` field, not the HTTP status code.
  */
 
-const AUTH_OPTS = { baseUrl: config.authBaseUrl } as const;
+/** Thrown for authentication-specific failures with a human-readable message. */
+export class AuthError extends Error {
+  constructor(
+    public readonly code:
+      | 'WRONG_CREDENTIALS'
+      | 'EMAIL_EXISTS'
+      | 'SIGN_IN_NOT_ALLOWED'
+      | 'FIELD_ERROR'
+      | 'UNKNOWN',
+    message: string,
+  ) {
+    super(message);
+    this.name = 'AuthError';
+  }
+}
 
-/** SuperTokens expects credentials wrapped as a formFields array. */
-function formFields(email: string, password: string) {
-  return {
+function buildBody(email: string, password: string): string {
+  return JSON.stringify({
     formFields: [
       { id: 'email', value: email },
       { id: 'password', value: password },
     ],
-  };
+  });
 }
 
-export async function signUp(email: string, password: string): Promise<AuthUser> {
-  const res = await postJson<any>('/auth/signup', formFields(email, password), AUTH_OPTS);
-  return { id: res?.user?.id ?? '', email: res?.user?.emails?.[0] ?? email };
+/** POST to the node-auth service, returning both parsed body and response headers. */
+async function authPost(path: string, rid: string, body: string): Promise<{ data: unknown; headers: Headers }> {
+  const url = `${config.authBaseUrl}${path}`;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), config.requestTimeoutMs);
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', rid },
+      body,
+      signal: controller.signal,
+    });
+  } catch (err) {
+    throw new NetworkError(`Auth service unreachable. Check your internet connection.`, err);
+  } finally {
+    clearTimeout(timeout);
+  }
+  const raw = await response.text();
+  let data: unknown = null;
+  try { data = raw ? JSON.parse(raw) : null; } catch { data = raw; }
+  return { data, headers: response.headers };
 }
 
 export async function signIn(email: string, password: string): Promise<AuthUser> {
-  const res = await postJson<any>('/auth/signin', formFields(email, password), AUTH_OPTS);
-  return { id: res?.user?.id ?? '', email: res?.user?.emails?.[0] ?? email };
+  const { data, headers } = await authPost('/auth/signin', 'emailpassword', buildBody(email, password));
+  const d = data as Record<string, unknown>;
+
+  if (d?.status === 'WRONG_CREDENTIALS_ERROR') {
+    throw new AuthError('WRONG_CREDENTIALS', 'Incorrect email or password.');
+  }
+  if (d?.status === 'SIGN_IN_NOT_ALLOWED') {
+    throw new AuthError('SIGN_IN_NOT_ALLOWED', 'This account is not allowed to sign in. Please contact support.');
+  }
+  if (d?.status !== 'OK') {
+    throw new AuthError('UNKNOWN', 'Sign in failed. Please try again.');
+  }
+
+  const accessToken  = headers.get('st-access-token');
+  const refreshToken = headers.get('st-refresh-token') ?? '';
+  if (accessToken) await saveTokens(accessToken, refreshToken);
+
+  const user = { id: (d.user as any)?.id ?? '', email: (d.user as any)?.emails?.[0] ?? email };
+  await saveUser(user);
+  return user;
+}
+
+export async function signUp(email: string, password: string): Promise<AuthUser> {
+  const { data, headers } = await authPost('/auth/signup', 'emailpassword', buildBody(email, password));
+  const d = data as Record<string, unknown>;
+
+  if (d?.status === 'EMAIL_ALREADY_EXISTS_ERROR') {
+    throw new AuthError('EMAIL_EXISTS', 'An account with this email already exists. Please sign in instead.');
+  }
+  if (d?.status === 'FIELD_ERROR') {
+    const fields = d.formFields as Array<{ id: string; error: string }> | undefined;
+    const firstError = fields?.find(f => f.error)?.error ?? 'Please check your email and password.';
+    throw new AuthError('FIELD_ERROR', firstError);
+  }
+  if (d?.status !== 'OK') {
+    throw new AuthError('UNKNOWN', 'Could not create account. Please try again.');
+  }
+
+  const accessToken  = headers.get('st-access-token');
+  const refreshToken = headers.get('st-refresh-token') ?? '';
+  if (accessToken) await saveTokens(accessToken, refreshToken);
+
+  const user = { id: (d.user as any)?.id ?? '', email: (d.user as any)?.emails?.[0] ?? email };
+  await saveUser(user);
+  return user;
 }
 
 export async function signOut(): Promise<void> {
-  await postJson('/auth/signout', {}, AUTH_OPTS);
+  try {
+    const { getAccessToken } = await import('./tokenStore');
+    const token = await getAccessToken();
+    if (token) {
+      await fetch(`${config.authBaseUrl}/auth/signout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'rid': 'session', 'Authorization': `Bearer ${token}` },
+        body: '{}',
+      });
+    }
+  } catch {
+    // best-effort — always clear local state regardless
+  } finally {
+    await clearTokens();
+  }
 }
 
 /**
- * Whether a valid session cookie exists. Pings the node-auth session-protected route;
- * a 401 means "not signed in" rather than a hard error.
- * (node-auth route: GET /api/private/ping behind verifySession)
+ * Returns true if the locally stored JWT is present and not expired.
+ * No network round-trip — fast enough to call on every app open.
  */
 export async function isSignedIn(): Promise<boolean> {
-  try {
-    await getJson('/api/private/ping', AUTH_OPTS);
-    return true;
-  } catch (err) {
-    if (err instanceof ApiError && err.status === 401) return false;
-    throw err;
-  }
+  return isTokenValid();
+}
+
+/** Returns the persisted user object (email + id) if the session is still valid. */
+export async function getSignedInUser(): Promise<AuthUser | null> {
+  const valid = await isTokenValid();
+  if (!valid) return null;
+  return getSavedUser();
 }

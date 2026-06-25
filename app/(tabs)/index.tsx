@@ -132,7 +132,7 @@ export default function HomeScreen() {
                 <TrendingCard
                   key={p.id}
                   product={p}
-                  onPress={() => router.push({ pathname: '/product/[id]', params: { id: p.id, name: p.name, price: p.price, store: p.store, storeLogo: p.storeLogo, category: p.category ?? '', imageUrls: JSON.stringify(p.imageUrls ?? []), productUrl: p.productUrl ?? '' } })}
+                  onPress={() => router.push({ pathname: '/product/[id]', params: { id: p.id, name: p.name, price: p.price, store: p.store, storeLogo: p.storeLogo, category: p.category ?? '', imageUrl: p.imageUrl ?? p.imageUrls?.[0] ?? '', imageUrls: JSON.stringify(p.imageUrls ?? []), productUrl: p.productUrl ?? '' } })}
                 />
               ))}
             </ScrollView>

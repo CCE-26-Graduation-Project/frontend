@@ -55,6 +55,18 @@ interface FavouritesContextType {
    * Called after search results arrive to pre-seed from the isFavourite field.
    */
   seedFavourites: (products: Product[]) => void;
+  /**
+   * Re-fetches favourites from the backend. Call this after the user signs in so
+   * their persisted favourites are loaded into the app immediately.
+   */
+  reloadFavourites: () => Promise<void>;
+  /**
+   * Clears the local favourites list and disables backend sync.
+   * Call this after the user signs out.
+   */
+  clearFavourites: () => void;
+  /** True when the user is signed in and backend sync is active. */
+  isAuthenticated: boolean;
 }
 
 const FavouritesContext = createContext<FavouritesContextType | null>(null);
@@ -150,8 +162,31 @@ export function FavouritesProvider({ children }: { children: React.ReactNode }) 
     });
   }, []);
 
+  // ── Reload from backend (call after sign-in) ──────────────────────────────
+  const reloadFavourites = useCallback(async () => {
+    setLoading(true);
+    try {
+      const dtos = await getFavourites();
+      setFavourites(dtos.map(favouriteToProduct));
+      setAuthenticated(true);
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        setAuthenticated(false);
+      }
+      // Any other error: keep whatever is already in local state
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // ── Clear on sign-out ─────────────────────────────────────────────────────
+  const clearFavourites = useCallback(() => {
+    setFavourites([]);
+    setAuthenticated(false);
+  }, []);
+
   return (
-    <FavouritesContext.Provider value={{ favourites, loading, toggleFavourite, isFavourite, seedFavourites }}>
+    <FavouritesContext.Provider value={{ favourites, loading, toggleFavourite, isFavourite, seedFavourites, reloadFavourites, clearFavourites, isAuthenticated: authenticated }}>
       {children}
     </FavouritesContext.Provider>
   );
