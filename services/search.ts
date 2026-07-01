@@ -109,7 +109,7 @@ async function appendImagePart(form: FormData, imageUri: string): Promise<void> 
 // GET /api/public/autocomplete?q=<query>&limit=<n>  → string[]
 // Returns [] on any error so callers don't need to handle failures.
 // ════════════════════════════════════════════════════════════════════════════════
-export async function getAutocomplete(q: string, limit = 7): Promise<string[]> {
+export async function getAutocomplete(q: string, limit = 5): Promise<string[]> {
   const trimmed = q.trim();
   if (!trimmed) return [];
   try {
