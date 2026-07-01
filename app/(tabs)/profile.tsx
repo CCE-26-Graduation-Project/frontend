@@ -21,11 +21,6 @@ import type { AuthUser } from '../../services/types';
 
 const NAV_TOTAL_HEIGHT = 114;
 
-const MENU_ITEMS = [
-  { icon: 'bell' as const, label: 'Price alert settings' },
-  { icon: 'globe' as const, label: 'Preferred stores' },
-  { icon: 'star' as const, label: 'Snoop Plus' },
-];
 
 type AuthState = 'loading' | 'signedIn' | 'signedOut';
 type FormMode = 'signin' | 'signup';
@@ -38,6 +33,7 @@ export default function ProfileScreen() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [formMode, setFormMode] = useState<FormMode>('signin');
   const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [formError, setFormError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -85,6 +81,10 @@ export default function ProfileScreen() {
   }, [email, password, reloadFavourites]);
 
   const handleSignUp = useCallback(async () => {
+    if (!name.trim()) {
+      setFormError('Please enter your name.');
+      return;
+    }
     if (!email.trim() || !password) {
       setFormError('Please enter your email and password.');
       return;
@@ -96,7 +96,7 @@ export default function ProfileScreen() {
     setSubmitting(true);
     setFormError('');
     try {
-      const u = await signUp(email.trim(), password);
+      const u = await signUp(email.trim(), password, name.trim());
       setUser(u);
       setAuthState('signedIn');
       setEmail('');
@@ -126,7 +126,7 @@ export default function ProfileScreen() {
     setAuthState('signedOut');
   }, [clearFavourites]);
 
-  const displayName = user?.email ? user.email.split('@')[0] : null;
+  const displayName = user?.name ?? (user?.email ? user.email.split('@')[0] : null);
 
   // ── Loading ───────────────────────────────────────────────────────────────
   if (authState === 'loading') {
@@ -159,7 +159,7 @@ export default function ProfileScreen() {
           <View style={styles.authHero}>
             <SnoopCharacter expression="thinking" size={90} />
             <Text style={styles.authHeading}>
-              {formMode === 'signin' ? 'Welcome back' : 'Create an account'}
+              {formMode === 'signin' ? 'Welcome Back!' : 'Create an account'}
             </Text>
             <Text style={styles.authSubheading}>
               {formMode === 'signin'
@@ -172,7 +172,7 @@ export default function ProfileScreen() {
           <View style={styles.modeTabs}>
             <Pressable
               style={[styles.modeTab, formMode === 'signin' && styles.modeTabActive]}
-              onPress={() => { setFormMode('signin'); setFormError(''); }}
+              onPress={() => { setFormMode('signin'); setFormError(''); setName(''); }}
             >
               <Text style={[styles.modeTabText, formMode === 'signin' && styles.modeTabTextActive]}>
                 Sign in
@@ -190,6 +190,21 @@ export default function ProfileScreen() {
 
           {/* Form */}
           <View style={styles.form}>
+            {formMode === 'signup' && (
+              <View style={styles.inputWrap}>
+                <Feather name="user" size={16} color={theme.colors.text2} style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Full name"
+                  placeholderTextColor={theme.colors.text2}
+                  value={name}
+                  onChangeText={(t) => { setName(t); setFormError(''); }}
+                  autoCapitalize="words"
+                  autoCorrect={false}
+                  returnKeyType="next"
+                />
+              </View>
+            )}
             <View style={styles.inputWrap}>
               <Feather name="mail" size={16} color={theme.colors.text2} style={styles.inputIcon} />
               <TextInput
@@ -277,21 +292,8 @@ export default function ProfileScreen() {
 
         {/* Menu */}
         <View style={styles.menu}>
-          {MENU_ITEMS.map((item, i) => (
-            <Pressable
-              key={item.label}
-              style={[styles.menuRow, i < MENU_ITEMS.length - 1 && styles.menuDivider]}
-            >
-              <View style={styles.menuIcon}>
-                <Feather name={item.icon} size={18} color={theme.colors.text1} />
-              </View>
-              <Text style={styles.menuLabel}>{item.label}</Text>
-              <Feather name="chevron-right" size={18} color={theme.colors.text2} />
-            </Pressable>
-          ))}
-
           {/* Sign out row */}
-          <Pressable style={[styles.menuRow, styles.menuDividerTop]} onPress={handleSignOut}>
+          <Pressable style={styles.menuRow} onPress={handleSignOut}>
             <View style={[styles.menuIcon, styles.menuIconDanger]}>
               <Feather name="log-out" size={18} color="#E53935" />
             </View>
@@ -485,14 +487,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.s4,
     minHeight: 44,
     gap: 12,
-  },
-  menuDivider: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: theme.colors.divider,
-  },
-  menuDividerTop: {
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: theme.colors.divider,
   },
   menuIcon: {
     width: 32,

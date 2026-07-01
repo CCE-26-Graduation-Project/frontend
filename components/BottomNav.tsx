@@ -1,9 +1,11 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { View, Text, Pressable, StyleSheet, Animated, LayoutChangeEvent } from 'react-native';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
+import { View, Text, Pressable, StyleSheet, Animated, LayoutChangeEvent, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path, Defs, Filter, FeDropShadow } from 'react-native-svg';
+import * as ImagePicker from 'expo-image-picker';
+import { router } from 'expo-router';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 
 const NAV_BG = '#0D0B61';
@@ -87,6 +89,18 @@ export function BottomNav({ state, navigation }: BottomTabBarProps) {
 
   const currentRouteName = state.routes[state.index]?.name;
 
+  const handleCamera = useCallback(async () => {
+    const perm = await ImagePicker.requestCameraPermissionsAsync();
+    if (!perm.granted) {
+      Alert.alert('Camera permission needed', 'Enable camera access in Settings to search by photo.');
+      return;
+    }
+    const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.7, allowsEditing: true });
+    if (!result.canceled && result.assets[0]?.uri) {
+      router.push({ pathname: '/(tabs)/browse', params: { cameraUri: result.assets[0].uri, cameraAt: String(Date.now()) } });
+    }
+  }, []);
+
   const handleNavLayout = (e: LayoutChangeEvent) => {
     setNavWidth(e.nativeEvent.layout.width);
   };
@@ -98,7 +112,7 @@ export function BottomNav({ state, navigation }: BottomTabBarProps) {
       {/* Floating camera button */}
       <View style={styles.cameraAnchor} pointerEvents="box-none">
         <Animated.View style={[styles.cameraShadow, { transform: [{ scale: pulseAnim }] }]}>
-          <Pressable onPress={() => navigate('camera')} style={styles.cameraBtn}>
+          <Pressable onPress={handleCamera} style={styles.cameraBtn}>
             <LinearGradient
               colors={CAMERA_GRADIENT}
               start={{ x: 0.1, y: 0 }}

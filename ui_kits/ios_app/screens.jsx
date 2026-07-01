@@ -4,36 +4,10 @@
 // Wraps everything in PaletteWrapper so [data-palette] takes effect locally.
 
 const SCREEN_HEIGHT = 874 - 47; // frame height − status bar approx
-const CATEGORY_LIST = [
-  { icon: "shirt", label: "Fashion" },
-  { icon: "shoe", label: "Shoes" },
-  { icon: "bag", label: "Bags" },
-  { icon: "fridge", label: "Appliances" },
-];
 
-const TRENDING_PRODUCTS = [
-  { name: "Dyson V15 Detect Vacuum", vendor: "Dyson", tone: "warm" },
-  { name: "LEGO Botanical Roses", vendor: "LEGO", tone: "character" },
-  { name: "iPad mini 7th gen", vendor: "Apple Store", tone: "accent" },
-  { name: "Nintendo Switch OLED", vendor: "Nintendo", tone: "dark" },
-  { name: "Hario V60 Pour Over", vendor: "Specialty Coffee", tone: "warm" },
-];
 
-const RESULTS_GRID_DATA = [
-  { name: "Sony WH-1000XM5 wireless headphones", store: "Best Buy", storeLogo: "BB", price: "$249.00", oldPrice: "$329.00", discountPct: 24, tone: "accent" },
-  { name: "Apple iPhone 15 Pro 256GB Titanium", store: "Apple Store", storeLogo: "A", price: "$999.00", tone: "dark" },
-  { name: "Nike Air Max 90 Sneakers", store: "Nike", storeLogo: "N", price: "$89.97", oldPrice: "$140.00", discountPct: 36, tone: "warm" },
-  { name: "Dyson V15 Detect Vacuum", store: "Dyson", storeLogo: "D", price: "$649.00", tone: "character" },
-  { name: "LEGO Botanical Roses 10328", store: "LEGO", storeLogo: "L", price: "$54.99", tone: "warm" },
-  { name: "Hario V60 Pour Over Set", store: "Coffee Co.", storeLogo: "C", price: "$32.50", oldPrice: "$42.50", discountPct: 24, tone: "character" },
-];
 
-const RESULTS_LIST_DATA = [
-  { name: "LG OLED C3 65\" 4K Smart TV", specs: "OLED · 120Hz · webOS 23", priceRange: "$1,499 – $2,199", topStores: ["Best Buy", "LG.com", "Amazon"], stores: "23 stores", tone: "dark" },
-  { name: "Sony WH-1000XM5 Wireless Headphones", specs: "Active noise cancel · 30h battery", priceRange: "$249 – $429", topStores: ["Best Buy", "Sony", "B&H Photo"], stores: "18 stores", tone: "accent" },
-  { name: "Apple MacBook Air 13\" M3", specs: "8GB / 256GB · Starlight", priceRange: "$999 – $1,199", topStores: ["Apple Store", "Best Buy", "Amazon"], stores: "11 stores", tone: "character" },
-  { name: "Dyson V15 Detect Cordless Vacuum", specs: "Laser detection · 60min runtime", priceRange: "$549 – $799", topStores: ["Dyson", "Best Buy", "Target"], stores: "12 stores", tone: "warm" },
-];
+
 
 const NOTIFICATIONS = [
   { unread: true, expr: "happy", title: "Price drop on iPhone 15 Pro", body: "Now $899 at Apple Store — down $100 from yesterday.", time: "Just now" },

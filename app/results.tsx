@@ -73,7 +73,7 @@ export default function ResultsScreen() {
         </Pressable>
         <Pressable
           style={styles.searchPill}
-          onPress={() => router.push('/search')}
+          onPress={() => router.push({ pathname: '/(tabs)/browse', params: { focusAt: String(Date.now()) } })}
         >
           <Feather name={imageUri ? 'camera' : 'search'} size={18} color={theme.colors.text2} />
           <Text style={styles.searchQuery} numberOfLines={1}>{searchLabel}</Text>
@@ -244,7 +244,7 @@ function NoResultsState({ query, onRetry }: { query: string; onRetry: () => void
           <Feather name="refresh-cw" size={16} color={theme.colors.text1} />
           <Text style={styles.secondaryBtnText}>Try again</Text>
         </Pressable>
-        <Pressable style={styles.secondaryBtn} onPress={() => router.push('/search')}>
+        <Pressable style={styles.secondaryBtn} onPress={() => router.push({ pathname: '/(tabs)/browse', params: { focusAt: String(Date.now()) } })}>
           <Feather name="search" size={16} color={theme.colors.text1} />
           <Text style={styles.secondaryBtnText}>New search</Text>
         </Pressable>

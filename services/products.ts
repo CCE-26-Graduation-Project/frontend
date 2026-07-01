@@ -11,7 +11,7 @@ function toneForId(id: string): ProductTone {
 }
 
 function formatPrice(price: number): string {
-  return `$${price.toFixed(2)}`;
+  return `EGP ${price.toFixed(2)}`;
 }
 
 export function searchResultToProduct(result: SearchResult): Product {
@@ -48,6 +48,12 @@ export function trendingResultToProduct(result: TrendingResultDto): Product {
 export async function getTrending(timeframe: 'daily' | 'weekly' | 'monthly' | 'all-time' = 'daily'): Promise<Product[]> {
   const results = await getJson<TrendingResultDto[]>(`/api/public/trending?timeframe=${timeframe}`);
   return results.map(trendingResultToProduct);
+}
+
+export type Vendor = { name: string; websiteUrl: string };
+
+export async function getVendors(): Promise<Vendor[]> {
+  return getJson<Vendor[]>('/api/public/vendors');
 }
 
 export async function enrichResults(results: SearchResult[]): Promise<Product[]> {

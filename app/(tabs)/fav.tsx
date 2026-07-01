@@ -25,14 +25,6 @@ export default function FavScreen() {
       >
         <View style={styles.topBar}>
           <Text style={styles.title}>Favourites</Text>
-          <View style={styles.topBarRight}>
-            <Pressable style={styles.iconBtn} hitSlop={8}>
-              <Feather name="grid" size={18} color={theme.colors.text1} />
-            </Pressable>
-            <Pressable style={styles.iconBtn} hitSlop={8}>
-              <Feather name="sliders" size={18} color={theme.colors.text1} />
-            </Pressable>
-          </View>
         </View>
 
         {/* Warning banner — shown whenever the user is not signed in */}
@@ -60,7 +52,7 @@ export default function FavScreen() {
             <Text style={styles.emptyBody}>
               Tap the heart on any product to add it to your favourites.
             </Text>
-            <Pressable style={styles.searchBtn} onPress={() => router.push('/search')}>
+            <Pressable style={styles.searchBtn} onPress={() => router.push({ pathname: '/(tabs)/browse', params: { focusAt: String(Date.now()) } })}>
               <Feather name="search" size={16} color="#fff" />
               <Text style={styles.searchBtnText}>Start searching</Text>
             </Pressable>
@@ -120,19 +112,6 @@ const styles = StyleSheet.create({
     color: theme.colors.text1,
     letterSpacing: -0.3,
   },
-  topBarRight: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  iconBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: theme.colors.bg2,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
   // ── Auth warning banner ────────────────────────────────────────────────────
   authBanner: {
     flexDirection: 'row',

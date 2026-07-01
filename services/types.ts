@@ -59,6 +59,7 @@ export interface FavouriteResultDto {
   vendor: string;
   category: string;
   productUrl: string | null;
+  imageUrl: string | null;
   color: string | null;
   imageUrls: string[];
 }
@@ -67,4 +68,5 @@ export interface FavouriteResultDto {
 export interface AuthUser {
   id: string;
   email: string;
+  name?: string;
 }

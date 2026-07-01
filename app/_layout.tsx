@@ -28,13 +28,6 @@ export default function RootLayout() {
         <StatusBar style="dark" backgroundColor={theme.colors.bg1} />
         <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.colors.bg1 } }}>
           <Stack.Screen name="(tabs)" />
-          <Stack.Screen
-            name="search"
-            options={{
-              presentation: 'fullScreenModal',
-              animation: 'slide_from_bottom',
-            }}
-          />
           <Stack.Screen name="results" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="product/[id]" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="notifications" options={{ animation: 'slide_from_right' }} />

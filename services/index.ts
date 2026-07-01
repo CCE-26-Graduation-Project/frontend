@@ -21,10 +21,12 @@ export type { SearchResult, SearchPage, TrendingResultDto, FavouriteResultDto, A
 export { searchByText, searchByImage, searchMultimodal } from './search';
 export {
   getTrending,
+  getVendors,
   enrichResults,
   searchResultToProduct,
   trendingResultToProduct,
 } from './products';
+export type { Vendor } from './products';
 export {
   getFavourites,
   addFavourite,

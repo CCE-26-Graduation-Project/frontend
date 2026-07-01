@@ -1,5 +1,6 @@
 import React from 'react';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { SportswearIcon } from './SportswearIcon';
 
 export type IconName =
   | 'search' | 'mic' | 'camera' | 'home' | 'bookmark' | 'bell' | 'user'
@@ -7,7 +8,7 @@ export type IconName =
   | 'clock' | 'flame' | 'trending' | 'folder' | 'globe' | 'pin' | 'check'
   | 'plus' | 'chevronRight' | 'chevronDown' | 'refresh' | 'star' | 'waveform'
   | 'image' | 'tag' | 'bag' | 'book' | 'sparkles' | 'swap'
-  | 'shirt' | 'shoe' | 'sofa' | 'fridge' | 'ball' | 'car';
+  | 'shirt' | 'shoe' | 'sofa' | 'fridge' | 'ball' | 'car' | 'sportswear';
 
 type FeatherName = React.ComponentProps<typeof Feather>['name'];
 type MCIName = React.ComponentProps<typeof MaterialCommunityIcons>['name'];
@@ -64,6 +65,9 @@ interface IconProps {
 }
 
 export function Icon({ name, size = 22, color = '#1E2B4D' }: IconProps) {
+  if (name === 'sportswear') {
+    return <SportswearIcon size={size} color={color} />;
+  }
   const mciName = MCI[name];
   if (mciName) {
     return <MaterialCommunityIcons name={mciName} size={size} color={color} />;

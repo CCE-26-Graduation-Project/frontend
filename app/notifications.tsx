@@ -22,59 +22,16 @@ interface Notif {
   read: boolean;
 }
 
-const INITIAL: Notif[] = [
-  {
-    id: '1',
-    type: 'price_drop',
-    title: 'Price drop — Nike Air Max 270',
-    body: 'Dropped from EGP 4,200 to EGP 3,150 at FootLocker Egypt.',
-    time: '2 min ago',
-    read: false,
-  },
-  {
-    id: '2',
-    type: 'deal',
-    title: 'Flash deal — Samsung 65" QLED',
-    body: '24-hour deal at Noon. Save up to 35% while stock lasts.',
-    time: '1 hr ago',
-    read: false,
-  },
-  {
-    id: '3',
-    type: 'back_in_stock',
-    title: 'Back in stock — Sony WH-1000XM5',
-    body: 'Now available again on Amazon Egypt. Price: EGP 8,499.',
-    time: '3 hr ago',
-    read: false,
-  },
-  {
-    id: '4',
-    type: 'price_drop',
-    title: 'Price drop — Dyson V12 Vacuum',
-    body: 'Down EGP 600 at Carrefour Egypt. New price: EGP 7,999.',
-    time: 'Yesterday',
-    read: true,
-  },
-  {
-    id: '5',
-    type: 'info',
-    title: 'Welcome to Snoop!',
-    body: 'We track prices across 47 stores so you never overpay.',
-    time: '2 days ago',
-    read: true,
-  },
-];
-
 const ICON: Record<NotifType, { name: React.ComponentProps<typeof Feather>['name']; color: string; bg: string }> = {
-  price_drop:    { name: 'trending-down', color: theme.colors.savings,  bg: theme.colors.savingsSoft },
+  price_drop:    { name: 'trending-down', color: theme.colors.savings,   bg: theme.colors.savingsSoft },
   back_in_stock: { name: 'refresh-cw',   color: theme.colors.accentDeep, bg: theme.colors.accentSoft },
-  deal:          { name: 'zap',           color: '#E07A5F',              bg: 'rgba(224,122,95,0.12)' },
-  info:          { name: 'info',          color: theme.colors.text2,     bg: theme.colors.bg2 },
+  deal:          { name: 'zap',           color: '#E07A5F',               bg: 'rgba(224,122,95,0.12)' },
+  info:          { name: 'info',          color: theme.colors.text2,      bg: theme.colors.bg2 },
 };
 
 export default function NotificationsScreen() {
   const insets = useSafeAreaInsets();
-  const [notifs, setNotifs] = useState<Notif[]>(INITIAL);
+  const [notifs, setNotifs] = useState<Notif[]>([]);
 
   const unreadCount = notifs.filter((n) => !n.read).length;
 
@@ -110,40 +67,45 @@ export default function NotificationsScreen() {
         </View>
       )}
 
-      <ScrollView
-        contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 24 }]}
-        showsVerticalScrollIndicator={false}
-      >
-        {notifs.map((n) => {
-          const ic = ICON[n.type];
-          return (
-            <Pressable
-              key={n.id}
-              style={[styles.card, n.read && styles.cardRead]}
-              onPress={() => markRead(n.id)}
-            >
-              {/* Icon */}
-              <View style={[styles.iconWrap, { backgroundColor: ic.bg }]}>
-                <Feather name={ic.name} size={18} color={ic.color} />
-              </View>
-
-              {/* Text */}
-              <View style={styles.content}>
-                <Text style={[styles.notifTitle, n.read && styles.notifTitleRead]}>
-                  {n.title}
-                </Text>
-                <Text style={styles.notifBody} numberOfLines={2}>
-                  {n.body}
-                </Text>
-                <Text style={styles.time}>{n.time}</Text>
-              </View>
-
-              {/* Unread dot */}
-              {!n.read && <View style={styles.dot} />}
-            </Pressable>
-          );
-        })}
-      </ScrollView>
+      {notifs.length === 0 ? (
+        <View style={[styles.emptyState, { paddingBottom: insets.bottom + 40 }]}>
+          <Feather name="bell-off" size={48} color={theme.colors.text2} />
+          <Text style={styles.emptyTitle}>No notifications yet</Text>
+          <Text style={styles.emptyBody}>
+            Save products to your favourites and we'll notify you when their prices drop.
+          </Text>
+        </View>
+      ) : (
+        <ScrollView
+          contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 24 }]}
+          showsVerticalScrollIndicator={false}
+        >
+          {notifs.map((n) => {
+            const ic = ICON[n.type];
+            return (
+              <Pressable
+                key={n.id}
+                style={[styles.card, n.read && styles.cardRead]}
+                onPress={() => markRead(n.id)}
+              >
+                <View style={[styles.iconWrap, { backgroundColor: ic.bg }]}>
+                  <Feather name={ic.name} size={18} color={ic.color} />
+                </View>
+                <View style={styles.content}>
+                  <Text style={[styles.notifTitle, n.read && styles.notifTitleRead]}>
+                    {n.title}
+                  </Text>
+                  <Text style={styles.notifBody} numberOfLines={2}>
+                    {n.body}
+                  </Text>
+                  <Text style={styles.time}>{n.time}</Text>
+                </View>
+                {!n.read && <View style={styles.dot} />}
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      )}
     </View>
   );
 }
@@ -254,5 +216,26 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.accentDeep,
     marginTop: 4,
     flexShrink: 0,
+  },
+  emptyState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 40,
+    gap: 12,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: theme.colors.text1,
+    letterSpacing: -0.2,
+    marginTop: 8,
+  },
+  emptyBody: {
+    fontSize: 14,
+    color: theme.colors.text2,
+    textAlign: 'center',
+    lineHeight: 20,
+    maxWidth: 260,
   },
 });

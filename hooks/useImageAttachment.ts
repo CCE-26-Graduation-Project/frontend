@@ -50,5 +50,8 @@ export function useImageAttachment() {
 
   const clear = useCallback(() => setUri(null), []);
 
-  return { uri, picking, pick, clear };
+  /** Directly set the URI (e.g. from a camera capture passed via navigation params). */
+  const set = useCallback((newUri: string) => setUri(newUri), []);
+
+  return { uri, picking, pick, clear, set };
 }

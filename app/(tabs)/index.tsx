@@ -1,25 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
   ScrollView,
   Pressable,
   StyleSheet,
-  SafeAreaView,
   Platform,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { SearchBar } from '../../components/SearchBar';
 import { CategoryCard } from '../../components/CategoryCard';
+import { VendorCard } from '../../components/VendorCard';
 import { TrendingCard } from '../../components/TrendingCard';
 import { SnoopCharacter } from '../../components/SnoopCharacter';
 import { theme } from '../../constants/theme';
 import { CATEGORY_LIST } from '../../constants/data';
 import type { Product } from '../../constants/data';
-import { getTrending } from '../../services';
+import { getTrending, getVendors } from '../../services';
+import type { Vendor } from '../../services';
+import { getSignedInUser } from '../../services/auth';
 
 const NAV_TOTAL_HEIGHT = 114;
 
@@ -32,11 +36,30 @@ const TIMEFRAME_TABS: { key: Timeframe; label: string }[] = [
   { key: 'daily', label: 'Daily' },
 ];
 
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 18) return 'Good afternoon';
+  return 'Good evening';
+}
+
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
+  const [vendors, setVendors] = useState<Vendor[]>([]);
   const [trending, setTrending] = useState<Product[]>([]);
   const [trendingLoading, setTrendingLoading] = useState(true);
   const [timeframe, setTimeframe] = useState<Timeframe>('all-time');
+  const [userName, setUserName] = useState<string | null>(null);
+
+  useEffect(() => {
+    getVendors().then(setVendors).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    getSignedInUser().then((u) => {
+      if (u) setUserName(u.name ?? u.email.split('@')[0]);
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -47,6 +70,18 @@ export default function HomeScreen() {
       .finally(() => { if (!cancelled) setTrendingLoading(false); });
     return () => { cancelled = true; };
   }, [timeframe]);
+
+  const handleCamera = useCallback(async () => {
+    const perm = await ImagePicker.requestCameraPermissionsAsync();
+    if (!perm.granted) {
+      Alert.alert('Camera permission needed', 'Enable camera access in Settings to search by photo.');
+      return;
+    }
+    const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.7, allowsEditing: true });
+    if (!result.canceled && result.assets[0]?.uri) {
+      router.push({ pathname: '/(tabs)/browse', params: { cameraUri: result.assets[0].uri, cameraAt: String(Date.now()) } });
+    }
+  }, []);
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.colors.bg1 }]}>
@@ -69,7 +104,9 @@ export default function HomeScreen() {
         {/* Greeting */}
         <View style={styles.greeting}>
           <View style={styles.greetingText}>
-            <Text style={styles.greetingTitle}>Good morning, Alex.</Text>
+            <Text style={styles.greetingTitle}>
+              {userName ? `${getGreeting()}, ${userName}.` : `${getGreeting()}!`}
+            </Text>
             <Text style={styles.greetingBody}>What are you looking for today?</Text>
           </View>
           <SnoopCharacter expression="waving" size={84} />
@@ -77,7 +114,11 @@ export default function HomeScreen() {
 
         {/* Search bar */}
         <View style={styles.searchWrapper}>
-          <SearchBar onTap={() => router.push({ pathname: '/browse', params: { focusAt: String(Date.now()) } })} />
+          <SearchBar
+            onTap={() => router.push({ pathname: '/browse', params: { focusAt: String(Date.now()) } })}
+            onCameraPress={handleCamera}
+            onAttachPress={() => router.push({ pathname: '/browse', params: { openAttach: String(Date.now()) } })}
+          />
         </View>
 
         {/* Categories */}
@@ -85,10 +126,31 @@ export default function HomeScreen() {
           <Text style={styles.sectionTitle}>Categories</Text>
           <View style={styles.categoriesRow}>
             {CATEGORY_LIST.map((c) => (
-              <CategoryCard key={c.label} icon={c.icon} label={c.label} />
+              <CategoryCard
+                key={c.label}
+                icon={c.icon}
+                label={c.label}
+                onPress={() => router.push({ pathname: '/browse', params: { searchQuery: c.label, searchAt: String(Date.now()) } })}
+              />
             ))}
           </View>
         </View>
+
+        {/* Vendors */}
+        {vendors.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Our Vendors</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.vendorList}
+            >
+              {vendors.map((v) => (
+                <VendorCard key={v.name} name={v.name} websiteUrl={v.websiteUrl} />
+              ))}
+            </ScrollView>
+          </View>
+        )}
 
         {/* Trending */}
         <View style={styles.section}>
@@ -224,6 +286,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
     paddingHorizontal: theme.spacing.s5,
+  },
+  vendorList: {
+    paddingHorizontal: theme.spacing.s5,
+    gap: 10,
+    flexDirection: 'row',
   },
   trendingList: {
     paddingHorizontal: theme.spacing.s5,

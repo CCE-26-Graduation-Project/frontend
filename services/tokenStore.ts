@@ -18,11 +18,11 @@ export async function getRefreshToken(): Promise<string | null> {
   try { return await SecureStore.getItemAsync(REFRESH_KEY); } catch { return null; }
 }
 
-export async function saveUser(user: { id: string; email: string }): Promise<void> {
+export async function saveUser(user: { id: string; email: string; name?: string }): Promise<void> {
   await SecureStore.setItemAsync(USER_KEY, JSON.stringify(user));
 }
 
-export async function getSavedUser(): Promise<{ id: string; email: string } | null> {
+export async function getSavedUser(): Promise<{ id: string; email: string; name?: string } | null> {
   try {
     const raw = await SecureStore.getItemAsync(USER_KEY);
     return raw ? JSON.parse(raw) : null;

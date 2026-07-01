@@ -1,7 +1,7 @@
 import { config } from './config';
 import type { AuthUser } from './types';
 import { NetworkError } from './apiClient';
-import { saveTokens, clearTokens, isTokenValid, saveUser, getSavedUser } from './tokenStore';
+import { saveTokens, clearTokens, isTokenValid, saveUser, getSavedUser, getAccessToken } from './tokenStore';
 
 /**
  * AUTH SERVICE — talks directly to node-auth (SuperTokens) on Azure.
@@ -43,6 +43,16 @@ function buildBody(email: string, password: string): string {
   });
 }
 
+function buildSignUpBody(email: string, password: string, name: string): string {
+  return JSON.stringify({
+    formFields: [
+      { id: 'email', value: email },
+      { id: 'password', value: password },
+      { id: 'name', value: name },
+    ],
+  });
+}
+
 /** POST to the node-auth service, returning both parsed body and response headers. */
 async function authPost(path: string, rid: string, body: string): Promise<{ data: unknown; headers: Headers }> {
   const url = `${config.authBaseUrl}${path}`;
@@ -67,6 +77,32 @@ async function authPost(path: string, rid: string, body: string): Promise<{ data
   return { data, headers: response.headers };
 }
 
+/**
+ * Fetches the user's stored name from node-auth /auth/me.
+ * Called after sign-in to hydrate the name from user_metadata in the DB.
+ * Returns null silently on any failure — name is non-critical.
+ */
+async function fetchUserName(): Promise<string | null> {
+  try {
+    const token = await getAccessToken();
+    if (!token) return null;
+    const url = `${config.authBaseUrl}/auth/me`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'st-access-token': token,
+      },
+    });
+    if (!response.ok) return null;
+    const data = await response.json() as { name?: string | null };
+    return data.name ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function signIn(email: string, password: string): Promise<AuthUser> {
   const { data, headers } = await authPost('/auth/signin', 'emailpassword', buildBody(email, password));
   const d = data as Record<string, unknown>;
@@ -85,13 +121,15 @@ export async function signIn(email: string, password: string): Promise<AuthUser>
   const refreshToken = headers.get('st-refresh-token') ?? '';
   if (accessToken) await saveTokens(accessToken, refreshToken);
 
-  const user = { id: (d.user as any)?.id ?? '', email: (d.user as any)?.emails?.[0] ?? email };
+  // Fetch the stored name from user_metadata — available for users who signed up with a name.
+  const name = await fetchUserName();
+  const user: AuthUser = { id: (d.user as any)?.id ?? '', email: (d.user as any)?.emails?.[0] ?? email, ...(name ? { name } : {}) };
   await saveUser(user);
   return user;
 }
 
-export async function signUp(email: string, password: string): Promise<AuthUser> {
-  const { data, headers } = await authPost('/auth/signup', 'emailpassword', buildBody(email, password));
+export async function signUp(email: string, password: string, name: string): Promise<AuthUser> {
+  const { data, headers } = await authPost('/auth/signup', 'emailpassword', buildSignUpBody(email, password, name));
   const d = data as Record<string, unknown>;
 
   if (d?.status === 'EMAIL_ALREADY_EXISTS_ERROR') {
@@ -110,14 +148,14 @@ export async function signUp(email: string, password: string): Promise<AuthUser>
   const refreshToken = headers.get('st-refresh-token') ?? '';
   if (accessToken) await saveTokens(accessToken, refreshToken);
 
-  const user = { id: (d.user as any)?.id ?? '', email: (d.user as any)?.emails?.[0] ?? email };
+  // Name is known at signup — store it directly without a round-trip.
+  const user: AuthUser = { id: (d.user as any)?.id ?? '', email: (d.user as any)?.emails?.[0] ?? email, name };
   await saveUser(user);
   return user;
 }
 
 export async function signOut(): Promise<void> {
   try {
-    const { getAccessToken } = await import('./tokenStore');
     const token = await getAccessToken();
     if (token) {
       await fetch(`${config.authBaseUrl}/auth/signout`, {
@@ -141,7 +179,7 @@ export async function isSignedIn(): Promise<boolean> {
   return isTokenValid();
 }
 
-/** Returns the persisted user object (email + id) if the session is still valid. */
+/** Returns the persisted user object (email + id + name) if the session is still valid. */
 export async function getSignedInUser(): Promise<AuthUser | null> {
   const valid = await isTokenValid();
   if (!valid) return null;

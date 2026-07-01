@@ -3,6 +3,9 @@
     "name": "Snoop",
     "slug": "snoop",
     "version": "1.0.0",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "orientation": "portrait",
     "scheme": "snoop",
     "userInterfaceStyle": "light",
@@ -11,13 +14,15 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.snoop.app"
+      "bundleIdentifier": "com.snoop.app",
+      "buildNumber": "1"
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#FAFAF7"
       },
-      "package": "com.snoop.app"
+      "package": "com.snoop.app",
+      "versionCode": 1
     },
     "web": {
       "bundler": "metro",
