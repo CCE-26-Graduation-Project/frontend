@@ -1,5 +1,5 @@
 import { Platform } from 'react-native';
-import { postMultipart } from './apiClient';
+import { getJson, postMultipart } from './apiClient';
 import type { SearchPage } from './types';
 
 // An empty page used as a safe default for blank queries or a malformed response,
@@ -102,6 +102,25 @@ async function appendImagePart(form: FormData, imageUri: string): Promise<void> 
     name: fileNameFromUri(imageUri),
     type: mimeFromUri(imageUri),
   } as any);
+}
+
+// ════════════════════════════════════════════════════════════════════════════════
+// AUTOCOMPLETE  (Elasticsearch-backed suggestions)
+// GET /api/public/autocomplete?q=<query>&limit=<n>  → string[]
+// Returns [] on any error so callers don't need to handle failures.
+// ════════════════════════════════════════════════════════════════════════════════
+export async function getAutocomplete(q: string, limit = 7): Promise<string[]> {
+  const trimmed = q.trim();
+  if (!trimmed) return [];
+  try {
+    const results = await getJson<string[]>(
+      `/api/public/autocomplete?q=${encodeURIComponent(trimmed)}&limit=${limit}`
+    );
+    return Array.isArray(results) ? results : [];
+  } catch (e) {
+    console.warn('[autocomplete] request failed:', e);
+    return [];
+  }
 }
 
 function fileNameFromUri(uri: string): string {

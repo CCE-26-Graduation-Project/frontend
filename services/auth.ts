@@ -1,6 +1,6 @@
 import { config } from './config';
 import type { AuthUser } from './types';
-import { NetworkError } from './apiClient';
+import { NetworkError, deleteJson } from './apiClient';
 import { saveTokens, clearTokens, isTokenValid, saveUser, getSavedUser, getAccessToken } from './tokenStore';
 
 /**
@@ -166,6 +166,39 @@ export async function signOut(): Promise<void> {
     }
   } catch {
     // best-effort — always clear local state regardless
+  } finally {
+    await clearTokens();
+  }
+}
+
+/**
+ * Permanently deletes the signed-in user's account and all associated data
+ * (favourites, search history) — required for App Store account-deletion
+ * compliance. Deletes app data on springboot-api first (while the token is
+ * still valid), then deletes the SuperTokens account itself on node-auth,
+ * then clears local secure storage regardless of outcome.
+ */
+export async function deleteAccount(): Promise<void> {
+  try {
+    await deleteJson('/api/secure/account');
+  } catch (err) {
+    // If we can't confirm app data was deleted, don't proceed to delete the
+    // auth account — surface the error so the user can retry.
+    throw new AuthError('UNKNOWN', 'Could not delete your data. Please check your connection and try again.');
+  }
+
+  try {
+    const token = await getAccessToken();
+    const response = await fetch(`${config.authBaseUrl}/auth/account`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}`, 'st-access-token': token } : {}),
+      },
+    });
+    if (!response.ok) {
+      throw new AuthError('UNKNOWN', 'Could not delete your account. Please try again.');
+    }
   } finally {
     await clearTokens();
   }

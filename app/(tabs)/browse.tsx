@@ -29,6 +29,7 @@ import { theme } from '../../constants/theme';
 import type { Product } from '../../constants/data';
 import { usePaginatedSearch } from '../../hooks/usePaginatedSearch';
 import { useImageAttachment } from '../../hooks/useImageAttachment';
+import { getAutocomplete } from '../../services';
 
 const NAV_TOTAL_HEIGHT = 114;
 
@@ -45,6 +46,11 @@ export default function BrowseScreen() {
   const [searched, setSearched]         = useState('');
   const [inputFocused, setInputFocused] = useState(false);
   const attachment                      = useImageAttachment();
+
+  const [suggestions, setSuggestions]         = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [headerHeight, setHeaderHeight]       = useState(0);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [sortOrder, setSortOrder] = useState<'price_asc' | 'price_desc' | 'name_asc' | 'name_desc' | null>(null);
   const [showSortMenu, setShowSortMenu] = useState(false);
@@ -90,6 +96,8 @@ export default function BrowseScreen() {
     const img = imageUri;
     if (!q && !img) return;
     Keyboard.dismiss();
+    setSuggestions([]);
+    setShowSuggestions(false);
     setSearched(q || 'Visual search');
     setSortOrder(null);
     setActiveFilters(null);
@@ -98,6 +106,8 @@ export default function BrowseScreen() {
 
   const handleClear = () => {
     setQuery('');
+    setSuggestions([]);
+    setShowSuggestions(false);
     inputRef.current?.focus();
   };
 
@@ -235,7 +245,10 @@ export default function BrowseScreen() {
   return (
     <View style={[styles.screen, { backgroundColor: theme.colors.bg1 }]}>
       {/* ── Search bar ── */}
-      <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
+      <View
+        style={[styles.header, { paddingTop: insets.top + 10 }]}
+        onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}
+      >
         <View style={styles.inputRow}>
           <Feather name="search" size={18} color={theme.colors.text2} style={styles.searchIcon} />
           <TextInput
@@ -244,10 +257,27 @@ export default function BrowseScreen() {
             placeholder="Search any product…"
             placeholderTextColor={theme.colors.text2}
             value={query}
-            onChangeText={setQuery}
+            onChangeText={(text) => {
+              setQuery(text);
+              if (debounceRef.current) clearTimeout(debounceRef.current);
+              if (text.trim().length > 0) {
+                debounceRef.current = setTimeout(async () => {
+                  const results = await getAutocomplete(text);
+                  setSuggestions(results);
+                  setShowSuggestions(results.length > 0);
+                }, 300);
+              } else {
+                setSuggestions([]);
+                setShowSuggestions(false);
+              }
+            }}
             onSubmitEditing={() => runSearch(query)}
             onFocus={() => setInputFocused(true)}
-            onBlur={() => setInputFocused(false)}
+            onBlur={() => {
+              setInputFocused(false);
+              // Delay so a suggestion tap can register before the dropdown hides
+              setTimeout(() => setShowSuggestions(false), 150);
+            }}
             returnKeyType="search"
             autoCorrect={false}
             autoCapitalize="none"
@@ -455,6 +485,27 @@ export default function BrowseScreen() {
           }
         />
       )}
+
+      {/* Autocomplete dropdown — last child so it paints above everything on Android */}
+      {showSuggestions && suggestions.length > 0 && (
+        <View style={[styles.suggestions, { top: headerHeight }]}>
+          {suggestions.map((s, i) => (
+            <Pressable
+              key={i}
+              style={[styles.suggestionRow, i < suggestions.length - 1 && styles.suggestionDivider]}
+              onPress={() => {
+                setQuery(s);
+                setSuggestions([]);
+                setShowSuggestions(false);
+                runSearch(s);
+              }}
+            >
+              <Feather name="search" size={14} color={theme.colors.text2} />
+              <Text style={styles.suggestionText} numberOfLines={1}>{s}</Text>
+            </Pressable>
+          ))}
+        </View>
+      )}
     </View>
   );
 }
@@ -622,5 +673,32 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: theme.colors.text1,
+  },
+  suggestions: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    zIndex: 100,
+    backgroundColor: theme.colors.bg1,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: theme.colors.divider,
+    ...theme.shadows.card,
+  },
+  suggestionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: theme.spacing.s4,
+    paddingVertical: 14,
+  },
+  suggestionDivider: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: theme.colors.divider,
+  },
+  suggestionText: {
+    flex: 1,
+    fontSize: 15,
+    color: theme.colors.text1,
+    letterSpacing: -0.06,
   },
 });

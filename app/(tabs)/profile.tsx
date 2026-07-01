@@ -9,12 +9,13 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { SnoopCharacter } from '../../components/SnoopCharacter';
 import { theme } from '../../constants/theme';
-import { signIn, signUp, signOut, getSignedInUser, AuthError } from '../../services/auth';
+import { signIn, signUp, signOut, deleteAccount, getSignedInUser, AuthError } from '../../services/auth';
 import { NetworkError } from '../../services/apiClient';
 import { useFavourites } from '../../contexts/FavouritesContext';
 import type { AuthUser } from '../../services/types';
@@ -37,6 +38,7 @@ export default function ProfileScreen() {
   const [password, setPassword] = useState('');
   const [formError, setFormError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   // On mount: check stored JWT validity without a network call.
   // If valid, restore the user object from secure storage.
@@ -124,6 +126,36 @@ export default function ProfileScreen() {
     clearFavourites();
     setUser(null);
     setAuthState('signedOut');
+  }, [clearFavourites]);
+
+  const confirmDeleteAccount = useCallback(() => {
+    Alert.alert(
+      'Delete account?',
+      'This permanently deletes your account and all associated data — favourites and search history — and cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            setDeleting(true);
+            try {
+              await deleteAccount();
+              clearFavourites();
+              setUser(null);
+              setAuthState('signedOut');
+            } catch (err) {
+              const message = err instanceof AuthError
+                ? err.message
+                : 'Could not delete your account. Please check your connection and try again.';
+              Alert.alert('Deletion failed', message);
+            } finally {
+              setDeleting(false);
+            }
+          },
+        },
+      ],
+    );
   }, [clearFavourites]);
 
   const displayName = user?.name ?? (user?.email ? user.email.split('@')[0] : null);
@@ -298,6 +330,24 @@ export default function ProfileScreen() {
               <Feather name="log-out" size={18} color="#E53935" />
             </View>
             <Text style={[styles.menuLabel, { color: '#E53935' }]}>Sign out</Text>
+          </Pressable>
+        </View>
+
+        {/* Account deletion — required by App Store guidelines */}
+        <View style={[styles.menu, { marginTop: theme.spacing.s4 }]}>
+          <Pressable
+            style={styles.menuRow}
+            onPress={confirmDeleteAccount}
+            disabled={deleting}
+          >
+            <View style={[styles.menuIcon, styles.menuIconDanger]}>
+              {deleting ? (
+                <ActivityIndicator color="#E53935" size="small" />
+              ) : (
+                <Feather name="trash-2" size={18} color="#E53935" />
+              )}
+            </View>
+            <Text style={[styles.menuLabel, { color: '#E53935' }]}>Delete account</Text>
           </Pressable>
         </View>
       </ScrollView>
