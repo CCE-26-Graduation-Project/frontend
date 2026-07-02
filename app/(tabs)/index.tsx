@@ -23,7 +23,7 @@ import { CATEGORY_LIST } from '../../constants/data';
 import type { Product } from '../../constants/data';
 import { getTrending, getVendors } from '../../services';
 import type { Vendor } from '../../services';
-import { getSignedInUser } from '../../services/auth';
+import { useAuth } from '../../contexts/AuthContext';
 
 const NAV_TOTAL_HEIGHT = 114;
 
@@ -38,6 +38,7 @@ const TIMEFRAME_TABS: { key: Timeframe; label: string }[] = [
 
 function getGreeting(): string {
   const hour = new Date().getHours();
+  if (hour < 5) return 'Good evening';
   if (hour < 12) return 'Good morning';
   if (hour < 18) return 'Good afternoon';
   return 'Good evening';
@@ -45,20 +46,15 @@ function getGreeting(): string {
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
+  const { user } = useAuth();
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [trending, setTrending] = useState<Product[]>([]);
   const [trendingLoading, setTrendingLoading] = useState(true);
   const [timeframe, setTimeframe] = useState<Timeframe>('all-time');
-  const [userName, setUserName] = useState<string | null>(null);
+  const userName = user ? (user.name ?? user.email.split('@')[0]) : null;
 
   useEffect(() => {
     getVendors().then(setVendors).catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    getSignedInUser().then((u) => {
-      if (u) setUserName(u.name ?? u.email.split('@')[0]);
-    }).catch(() => {});
   }, []);
 
   useEffect(() => {

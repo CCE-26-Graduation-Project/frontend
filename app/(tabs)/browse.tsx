@@ -418,7 +418,7 @@ export default function BrowseScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <SnoopCharacter expression="thinking" size={120} />
+          <SnoopCharacter expression="searching" size={250} />
           <Text style={styles.stateTitle}>Searching…</Text>
           <Text style={styles.stateBody}>Looking across stores for "{searched}"</Text>
           <ActivityIndicator color={theme.colors.text1} style={{ marginTop: 16 }} />
@@ -459,7 +459,7 @@ export default function BrowseScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <SnoopCharacter expression="waving" size={140} />
+          <SnoopCharacter expression="waving" size={200} />
           <Text style={styles.stateTitle}>What are you looking for?</Text>
           <Text style={styles.stateBody}>Type a product above and tap Search.</Text>
         </ScrollView>

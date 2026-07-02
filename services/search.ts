@@ -1,5 +1,5 @@
 import { Platform } from 'react-native';
-import { getJson, postMultipart } from './apiClient';
+import { deleteJson, getJson, postMultipart } from './apiClient';
 import type { SearchPage } from './types';
 
 // An empty page used as a safe default for blank queries or a malformed response,
@@ -121,6 +121,15 @@ export async function getAutocomplete(q: string, limit = 5): Promise<string[]> {
     console.warn('[autocomplete] request failed:', e);
     return [];
   }
+}
+
+// ════════════════════════════════════════════════════════════════════════════════
+// DELETE SEARCH HISTORY
+// DELETE /api/secure/searches → clears the signed-in user's search history and
+// search logs. Does NOT touch favourites. (springboot-api → AccountController.java)
+// ════════════════════════════════════════════════════════════════════════════════
+export async function deleteSearchHistory(): Promise<void> {
+  await deleteJson('/api/secure/searches');
 }
 
 function fileNameFromUri(uri: string): string {

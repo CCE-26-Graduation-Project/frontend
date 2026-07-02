@@ -204,7 +204,7 @@ export default function ResultsScreen() {
 function LoadingState({ query }: { query: string }) {
   return (
     <ScrollView contentContainerStyle={styles.stateContainer}>
-      <SnoopCharacter expression="thinking" size={160} />
+      <SnoopCharacter expression="searching" size={900} />
       <Text style={styles.stateTitle}>Finding deals…</Text>
       <Text style={styles.stateBody}>
         Searching across 47 stores. This usually takes about a second.

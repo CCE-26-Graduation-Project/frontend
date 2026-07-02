@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { ProductPlaceholder } from './ProductPlaceholder';
+import { VendorLogo } from './VendorLogo';
 import { theme } from '../constants/theme';
 import type { ListProduct } from '../constants/data';
 
@@ -24,6 +25,7 @@ export function ProductListCard({ product, onPress }: Props) {
           {topStores.map((s, i) => (
             <React.Fragment key={s}>
               {i > 0 && <View style={styles.dot} />}
+              <VendorLogo vendorName={s} size={13} borderRadius={3} />
               <Text style={styles.storeText} numberOfLines={1}>{s}</Text>
             </React.Fragment>
           ))}

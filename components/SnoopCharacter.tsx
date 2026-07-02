@@ -1,8 +1,15 @@
 import React from 'react';
+import { Image } from 'expo-image';
 import Svg, { G, Path, Ellipse, Circle, Line, Rect } from 'react-native-svg';
 import { theme } from '../constants/theme';
 
-export type SnoopExpression = 'neutral' | 'happy' | 'thinking' | 'listening' | 'surprised' | 'waving';
+export type SnoopExpression = 'happy' | 'thinking' | 'surprised' | 'waving' | 'searching';
+
+// Natural pixel width/height of each delivered mascot asset, used to keep its aspect ratio at any `size`.
+const ILLUSTRATED_ASSETS: Partial<Record<SnoopExpression, { source: number; ratio: number }>> = {
+  waving: { source: require('../assets/images/mascott/snoop-waving.png'), ratio: 335 / 600 },
+  searching: { source: require('../assets/images/mascott/snoop-searching.png'), ratio: 343 / 600 },
+};
 
 interface SnoopProps {
   expression?: SnoopExpression;
@@ -13,7 +20,20 @@ interface SnoopProps {
   highlight?: string;
 }
 
-export function SnoopCharacter({ expression = 'neutral', size = 120, body, outline, ear, highlight }: SnoopProps) {
+export function SnoopCharacter({ expression = 'happy', size = 120, body, outline, ear, highlight }: SnoopProps) {
+  const illustrated = ILLUSTRATED_ASSETS[expression];
+  if (illustrated) {
+    const { source, ratio } = illustrated;
+    return (
+      <Image
+        source={source}
+        style={{ width: size * ratio, height: size }}
+        contentFit="contain"
+        cachePolicy="memory-disk"
+      />
+    );
+  }
+
   const fill = body ?? theme.colors.character;
   const stroke = outline ?? theme.colors.characterInk;
   const earColor = ear ?? theme.colors.bg2;
@@ -45,20 +65,7 @@ export function SnoopCharacter({ expression = 'neutral', size = 120, body, outli
   let face: React.ReactNode = null;
   let extras: React.ReactNode = null;
 
-  if (expression === 'neutral') {
-    face = (
-      <G>
-        <Circle cx={82} cy={92} r={4.2} fill={stroke} />
-        <Circle cx={118} cy={92} r={4.2} fill={stroke} />
-        <Ellipse cx={100} cy={108} rx={5.5} ry={4} fill={stroke} />
-        <Path d="M100 113 V 120" stroke={stroke} strokeWidth={sw} strokeLinecap="round" />
-        <Path d="M100 120 Q 94 124 90 121" stroke={stroke} strokeWidth={sw} fill="none" strokeLinecap="round" />
-        <Path d="M100 120 Q 106 124 110 121" stroke={stroke} strokeWidth={sw} fill="none" strokeLinecap="round" />
-        <Ellipse cx={68} cy={118} rx={7} ry={4} fill={blush} />
-        <Ellipse cx={132} cy={118} rx={7} ry={4} fill={blush} />
-      </G>
-    );
-  } else if (expression === 'happy') {
+  if (expression === 'happy') {
     face = (
       <G>
         <Path d="M76 92 Q 82 84 88 92" stroke={stroke} strokeWidth={sw} fill="none" strokeLinecap="round" />
@@ -103,25 +110,6 @@ export function SnoopCharacter({ expression = 'neutral', size = 120, body, outli
         <Line x1={186} y1={90} x2={200} y2={106} stroke={stroke} strokeWidth={sw + 1.2} strokeLinecap="round" />
       </G>
     );
-  } else if (expression === 'listening') {
-    face = (
-      <G>
-        <Circle cx={82} cy={92} r={4.2} fill={stroke} />
-        <Circle cx={118} cy={92} r={4.2} fill={stroke} />
-        <Ellipse cx={100} cy={108} rx={5.5} ry={4} fill={stroke} />
-        <Ellipse cx={100} cy={122} rx={5} ry={6} fill={stroke} />
-        <Ellipse cx={68} cy={118} rx={7} ry={4} fill={blush} />
-        <Ellipse cx={132} cy={118} rx={7} ry={4} fill={blush} />
-      </G>
-    );
-    extras = (
-      <G fill="none" stroke={stroke} strokeWidth={sw} strokeLinecap="round">
-        <Path d="M10 96 Q 4 108 10 120" />
-        <Path d="M22 88 Q 12 108 22 128" opacity={0.55} />
-        <Path d="M190 96 Q 196 108 190 120" />
-        <Path d="M178 88 Q 188 108 178 128" opacity={0.55} />
-      </G>
-    );
   } else if (expression === 'surprised') {
     face = (
       <G>
@@ -137,33 +125,6 @@ export function SnoopCharacter({ expression = 'neutral', size = 120, body, outli
       <G fill={accent}>
         <Rect x={178} y={36} width={6} height={22} rx={3} />
         <Circle cx={181} cy={66} r={3.5} />
-      </G>
-    );
-  } else if (expression === 'waving') {
-    face = (
-      <G>
-        <Path d="M76 92 Q 82 84 88 92" stroke={stroke} strokeWidth={sw} fill="none" strokeLinecap="round" />
-        <Path d="M112 92 Q 118 84 124 92" stroke={stroke} strokeWidth={sw} fill="none" strokeLinecap="round" />
-        <Ellipse cx={100} cy={108} rx={5.5} ry={4} fill={stroke} />
-        <Path d="M100 113 V 118 M 100 118 Q 88 130 84 124 M 100 118 Q 112 130 116 124"
-          stroke={stroke} strokeWidth={sw} fill="none" strokeLinecap="round" />
-        <Ellipse cx={68} cy={120} rx={8} ry={4.5} fill={blush} />
-        <Ellipse cx={132} cy={120} rx={8} ry={4.5} fill={blush} />
-      </G>
-    );
-    extras = (
-      <G>
-        <Path
-          d="M160 138 C 178 124, 196 130, 192 148 C 198 156, 192 170, 180 168 C 174 176, 158 172, 156 158 Z"
-          fill={fill} stroke={stroke} strokeWidth={sw} strokeLinejoin="round"
-        />
-        <Circle cx={180} cy={142} r={2.5} fill={stroke} />
-        <Circle cx={188} cy={148} r={2.5} fill={stroke} />
-        <Circle cx={184} cy={156} r={2.5} fill={stroke} />
-        <G stroke={stroke} strokeWidth={2.4} strokeLinecap="round" opacity={0.55}>
-          <Path d="M198 118 L 206 112" />
-          <Path d="M190 110 L 194 100" />
-        </G>
       </G>
     );
   }

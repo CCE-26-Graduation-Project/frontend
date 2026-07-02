@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet, Image } from 'react-native';
 import { ProductPlaceholder } from './ProductPlaceholder';
+import { VendorLogo } from './VendorLogo';
 import { theme } from '../constants/theme';
 import type { Product } from '../constants/data';
 
@@ -22,7 +23,10 @@ export function TrendingCard({ product, onPress }: Props) {
         )}
       </View>
       <Text style={styles.name} numberOfLines={2}>{name}</Text>
-      <Text style={styles.vendor} numberOfLines={1}>{store}</Text>
+      <View style={styles.vendorRow}>
+        <VendorLogo vendorName={store} size={14} borderRadius={3} />
+        <Text style={styles.vendor} numberOfLines={1}>{store}</Text>
+      </View>
     </Pressable>
   );
 }
@@ -49,7 +53,13 @@ const styles = StyleSheet.create({
     lineHeight: 17,
     minHeight: 34,
   },
+  vendorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
   vendor: {
+    flex: 1,
     fontSize: 11,
     fontWeight: '500',
     color: theme.colors.text2,

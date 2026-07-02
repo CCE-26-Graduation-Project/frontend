@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -10,28 +10,78 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  Modal,
+  Animated,
+  InteractionManager,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { SnoopCharacter } from '../../components/SnoopCharacter';
 import { theme } from '../../constants/theme';
-import { signIn, signUp, signOut, deleteAccount, getSignedInUser, AuthError } from '../../services/auth';
+import { signIn, signUp, signOut, deleteAccount, AuthError } from '../../services/auth';
+import { deleteSearchHistory } from '../../services/search';
 import { NetworkError } from '../../services/apiClient';
 import { useFavourites } from '../../contexts/FavouritesContext';
-import type { AuthUser } from '../../services/types';
+import { useAuth } from '../../contexts/AuthContext';
 
 const NAV_TOTAL_HEIGHT = 114;
 
+const SUCCESS_DISPLAY_MS = 1600;
+// Gap between the loading modal closing and the success modal opening.
+// RN's Modal can silently fail to (re)present when another Modal (or a
+// native Alert) is still mid-dismiss — a real close/reopen cycle with a
+// short gap sidesteps that instead of relying on in-place content swaps.
+const MODAL_HANDOFF_MS = 220;
 
-type AuthState = 'loading' | 'signedIn' | 'signedOut';
+function LoadingOverlay({ text }: { text: string | null }) {
+  return (
+    <Modal visible={!!text} transparent animationType="fade" statusBarTranslucent>
+      <View style={styles.overlay}>
+        <View style={styles.statusCard}>
+          <ActivityIndicator color={theme.colors.text1} size="small" />
+          <Text style={styles.signOutText}>{text}</Text>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+function SuccessOverlay({ text }: { text: string | null }) {
+  const scale = useRef(new Animated.Value(0.6)).current;
+
+  useEffect(() => {
+    if (text) {
+      scale.setValue(0.6);
+      Animated.spring(scale, {
+        toValue: 1,
+        friction: 5,
+        tension: 140,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [text, scale]);
+
+  return (
+    <Modal visible={!!text} transparent animationType="fade" statusBarTranslucent>
+      <View style={styles.overlay}>
+        <View style={styles.statusCard}>
+          <Animated.View style={[styles.successBadge, { transform: [{ scale }] }]}>
+            <Feather name="check" size={26} color="#fff" />
+          </Animated.View>
+          <Text style={styles.signOutText}>{text}</Text>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
 type FormMode = 'signin' | 'signup';
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const { favourites, reloadFavourites, clearFavourites } = useFavourites();
+  const { user, loading: authLoading, setUser } = useAuth();
 
-  const [authState, setAuthState] = useState<AuthState>('loading');
-  const [user, setUser] = useState<AuthUser | null>(null);
   const [formMode, setFormMode] = useState<FormMode>('signin');
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
@@ -39,21 +89,33 @@ export default function ProfileScreen() {
   const [formError, setFormError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [clearingHistory, setClearingHistory] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+  const [loadingText, setLoadingText] = useState<string | null>(null);
+  const [successText, setSuccessText] = useState<string | null>(null);
+  const handoffTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const successTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // On mount: check stored JWT validity without a network call.
-  // If valid, restore the user object from secure storage.
-  useEffect(() => {
-    getSignedInUser()
-      .then((u) => {
-        if (u) {
-          setUser(u);
-          setAuthState('signedIn');
-        } else {
-          setAuthState('signedOut');
-        }
-      })
-      .catch(() => setAuthState('signedOut'));
+  const clearStatusTimers = useCallback(() => {
+    if (handoffTimer.current) clearTimeout(handoffTimer.current);
+    if (successTimer.current) clearTimeout(successTimer.current);
   }, []);
+
+  // Closes the loading modal, waits for it to fully dismiss, then opens a
+  // fresh success modal — see MODAL_HANDOFF_MS comment above.
+  const showSuccess = useCallback((text: string) => {
+    clearStatusTimers();
+    setLoadingText(null);
+    handoffTimer.current = setTimeout(() => {
+      setSuccessText(text);
+      successTimer.current = setTimeout(() => setSuccessText(null), SUCCESS_DISPLAY_MS);
+    }, MODAL_HANDOFF_MS);
+  }, [clearStatusTimers]);
+
+  useEffect(() => () => clearStatusTimers(), [clearStatusTimers]);
+
+  const authState: 'loading' | 'signedIn' | 'signedOut' =
+    authLoading ? 'loading' : user ? 'signedIn' : 'signedOut';
 
   const handleSignIn = useCallback(async () => {
     if (!email.trim() || !password) {
@@ -65,7 +127,6 @@ export default function ProfileScreen() {
     try {
       const u = await signIn(email.trim(), password);
       setUser(u);
-      setAuthState('signedIn');
       setEmail('');
       setPassword('');
       reloadFavourites(); // background — don't await, don't block the UI
@@ -80,7 +141,7 @@ export default function ProfileScreen() {
     } finally {
       setSubmitting(false);
     }
-  }, [email, password, reloadFavourites]);
+  }, [email, password, reloadFavourites, setUser]);
 
   const handleSignUp = useCallback(async () => {
     if (!name.trim()) {
@@ -100,7 +161,6 @@ export default function ProfileScreen() {
     try {
       const u = await signUp(email.trim(), password, name.trim());
       setUser(u);
-      setAuthState('signedIn');
       setEmail('');
       setPassword('');
       reloadFavourites();
@@ -115,9 +175,11 @@ export default function ProfileScreen() {
     } finally {
       setSubmitting(false);
     }
-  }, [email, password, reloadFavourites]);
+  }, [email, password, reloadFavourites, setUser]);
 
   const handleSignOut = useCallback(async () => {
+    setSigningOut(true);
+    setLoadingText('Signing out…');
     try {
       await signOut();
     } catch {
@@ -125,8 +187,9 @@ export default function ProfileScreen() {
     }
     clearFavourites();
     setUser(null);
-    setAuthState('signedOut');
-  }, [clearFavourites]);
+    setSigningOut(false);
+    showSuccess('Signed out successfully');
+  }, [clearFavourites, setUser, showSuccess]);
 
   const confirmDeleteAccount = useCallback(() => {
     Alert.alert(
@@ -137,41 +200,80 @@ export default function ProfileScreen() {
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: async () => {
+          onPress: () => {
             setDeleting(true);
-            try {
-              await deleteAccount();
-              clearFavourites();
-              setUser(null);
-              setAuthState('signedOut');
-            } catch (err) {
-              const message = err instanceof AuthError
-                ? err.message
-                : 'Could not delete your account. Please check your connection and try again.';
-              Alert.alert('Deletion failed', message);
-            } finally {
-              setDeleting(false);
-            }
+            // Deferred so the native Alert has fully dismissed before our
+            // Modal tries to present — presenting immediately can silently
+            // no-op on iOS while the alert's dismiss animation is in flight.
+            InteractionManager.runAfterInteractions(async () => {
+              setLoadingText('Deleting account…');
+              try {
+                await deleteAccount();
+                clearFavourites();
+                setUser(null);
+                showSuccess('Account deleted successfully');
+              } catch (err) {
+                setLoadingText(null);
+                const message = err instanceof AuthError
+                  ? err.message
+                  : 'Could not delete your account. Please check your connection and try again.';
+                Alert.alert('Deletion failed', message);
+              } finally {
+                setDeleting(false);
+              }
+            });
           },
         },
       ],
     );
-  }, [clearFavourites]);
+  }, [clearFavourites, setUser, showSuccess]);
+
+  const confirmDeleteSearchHistory = useCallback(() => {
+    Alert.alert(
+      'Delete search history?',
+      'This permanently deletes your search history. Your favourites will not be affected.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            setClearingHistory(true);
+            // See comment in confirmDeleteAccount — same Alert-dismiss race.
+            InteractionManager.runAfterInteractions(async () => {
+              setLoadingText('Deleting search history…');
+              try {
+                await deleteSearchHistory();
+                showSuccess('Search history deleted successfully');
+              } catch (err) {
+                setLoadingText(null);
+                const message = err instanceof AuthError
+                  ? err.message
+                  : 'Could not delete your search history. Please check your connection and try again.';
+                Alert.alert('Deletion failed', message);
+              } finally {
+                setClearingHistory(false);
+              }
+            });
+          },
+        },
+      ],
+    );
+  }, [showSuccess]);
 
   const displayName = user?.name ?? (user?.email ? user.email.split('@')[0] : null);
 
   // ── Loading ───────────────────────────────────────────────────────────────
+  let content: React.ReactNode;
   if (authState === 'loading') {
-    return (
+    content = (
       <View style={[styles.screen, styles.center, { backgroundColor: theme.colors.bg1 }]}>
         <ActivityIndicator color={theme.colors.text2} />
       </View>
     );
-  }
-
-  // ── Signed out — show login / signup form ─────────────────────────────────
-  if (authState === 'signedOut') {
-    return (
+  } else if (authState === 'signedOut') {
+    // ── Signed out — show login / signup form ───────────────────────────────
+    content = (
       <KeyboardAvoidingView
         style={[styles.screen, { backgroundColor: theme.colors.bg1 }]}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -289,10 +391,9 @@ export default function ProfileScreen() {
         </ScrollView>
       </KeyboardAvoidingView>
     );
-  }
-
-  // ── Signed in ─────────────────────────────────────────────────────────────
-  return (
+  } else {
+    // ── Signed in ───────────────────────────────────────────────────────────
+    content = (
     <View style={[styles.screen, { backgroundColor: theme.colors.bg1 }]}>
       <ScrollView
         contentContainerStyle={[
@@ -325,11 +426,33 @@ export default function ProfileScreen() {
         {/* Menu */}
         <View style={styles.menu}>
           {/* Sign out row */}
-          <Pressable style={styles.menuRow} onPress={handleSignOut}>
+          <Pressable style={styles.menuRow} onPress={handleSignOut} disabled={signingOut}>
             <View style={[styles.menuIcon, styles.menuIconDanger]}>
-              <Feather name="log-out" size={18} color="#E53935" />
+              {signingOut ? (
+                <ActivityIndicator color="#E53935" size="small" />
+              ) : (
+                <Feather name="log-out" size={18} color="#E53935" />
+              )}
             </View>
             <Text style={[styles.menuLabel, { color: '#E53935' }]}>Sign out</Text>
+          </Pressable>
+        </View>
+
+        {/* Search history deletion */}
+        <View style={[styles.menu, { marginTop: theme.spacing.s4 }]}>
+          <Pressable
+            style={styles.menuRow}
+            onPress={confirmDeleteSearchHistory}
+            disabled={clearingHistory}
+          >
+            <View style={styles.menuIcon}>
+              {clearingHistory ? (
+                <ActivityIndicator color={theme.colors.text1} size="small" />
+              ) : (
+                <Feather name="clock" size={18} color={theme.colors.text1} />
+              )}
+            </View>
+            <Text style={styles.menuLabel}>Delete Search History</Text>
           </Pressable>
         </View>
 
@@ -352,6 +475,15 @@ export default function ProfileScreen() {
         </View>
       </ScrollView>
     </View>
+    );
+  }
+
+  return (
+    <>
+      {content}
+      <LoadingOverlay text={loadingText} />
+      <SuccessOverlay text={successText} />
+    </>
   );
 }
 
@@ -359,6 +491,36 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   center: { justifyContent: 'center', alignItems: 'center' },
   content: { flexGrow: 1 },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  statusCard: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radius.card,
+    paddingVertical: 22,
+    paddingHorizontal: 32,
+    alignItems: 'center',
+    gap: 10,
+    minWidth: 200,
+    ...theme.shadows.card,
+  },
+  signOutText: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: theme.colors.text1,
+    textAlign: 'center',
+  },
+  successBadge: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#2E7D32',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   topBar: {
     height: 52,
     paddingHorizontal: theme.spacing.s4,

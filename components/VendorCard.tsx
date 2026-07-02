@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet, Linking } from 'react-native';
+import { Text, Pressable, StyleSheet, Linking } from 'react-native';
 import { theme } from '../constants/theme';
+import { VendorLogo } from './VendorLogo';
 
 interface Props {
   name: string;
@@ -16,16 +17,12 @@ function domainLabel(url: string): string {
 }
 
 export function VendorCard({ name, websiteUrl }: Props) {
-  const initial = name.charAt(0).toUpperCase();
-
   return (
     <Pressable
       style={styles.card}
       onPress={() => Linking.openURL(websiteUrl)}
     >
-      <View style={styles.avatar}>
-        <Text style={styles.initial}>{initial}</Text>
-      </View>
+      <VendorLogo vendorName={name} size={48} borderRadius={theme.radius.compact} />
       <Text style={styles.name} numberOfLines={1}>{name}</Text>
       <Text style={styles.url} numberOfLines={1}>{domainLabel(websiteUrl)}</Text>
     </Pressable>
@@ -43,22 +40,6 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.bg2,
     borderWidth: 1,
     borderColor: theme.colors.divider,
-  },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: theme.colors.accentSoft,
-    borderWidth: 1.5,
-    borderColor: theme.colors.accentDeep,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  initial: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: theme.colors.accentDeep,
-    letterSpacing: -0.3,
   },
   name: {
     fontSize: 13,

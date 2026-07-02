@@ -21,7 +21,25 @@
       "mcp__plugin_figma_figma__whoami",
       "mcp__plugin_figma_figma__create_new_file",
       "mcp__plugin_figma_figma__use_figma",
-      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('design/snoop.tokens.json','utf8'\\)\\); console.log\\('JSON valid ✓'\\)\")"
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('design/snoop.tokens.json','utf8'\\)\\); console.log\\('JSON valid ✓'\\)\")",
+      "Bash(xargs grep -l \"Modal\")",
+      "Bash(git log *)",
+      "Bash(npx expo *)",
+      "Bash(npx tsc *)",
+      "Bash(rm -rf /tmp/export_test)",
+      "Bash(rm -rf \"C:/Users/ASUS/AppData/Local/Temp/export_test\")",
+      "Bash(npm view *)",
+      "Bash(npm install *)",
+      "Bash(rm -rf /tmp/export_test2)",
+      "Bash(npm uninstall *)",
+      "Bash(rm -rf \"C:/Users/ASUS/AppData/Local/Temp/export_test3\")",
+      "Bash(node .claude/skills/impeccable/scripts/context.mjs)",
+      "Bash(graphify query *)",
+      "Bash(graphify explain *)",
+      "Bash(taskkill //F //IM node.exe //FI \"WINDOWTITLE eq *expo*\")",
+      "Bash(pkill -f \"expo start\")",
+      "Bash(rm -f svg.d.ts \"assets/images/mascott/snoop-waving.svg\" \"assets/images/mascott/snoop-searching.svg\")",
+      "Bash(node -e ' *)"
     ]
   },
   "enabledPlugins": {

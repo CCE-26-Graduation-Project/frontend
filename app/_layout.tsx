@@ -6,6 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Feather } from '@expo/vector-icons';
 import { theme } from '../constants/theme';
 import { FavouritesProvider } from '../contexts/FavouritesContext';
+import { AuthProvider } from '../contexts/AuthContext';
 import { onSessionExpired } from '../services/sessionEvents';
 
 export default function RootLayout() {
@@ -24,43 +25,45 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <FavouritesProvider>
-        <StatusBar style="dark" backgroundColor={theme.colors.bg1} />
-        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.colors.bg1 } }}>
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="results" options={{ animation: 'slide_from_right' }} />
-          <Stack.Screen name="product/[id]" options={{ animation: 'slide_from_right' }} />
-          <Stack.Screen name="notifications" options={{ animation: 'slide_from_right' }} />
-        </Stack>
+      <AuthProvider>
+        <FavouritesProvider>
+          <StatusBar style="dark" backgroundColor={theme.colors.bg1} />
+          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.colors.bg1 } }}>
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="results" options={{ animation: 'slide_from_right' }} />
+            <Stack.Screen name="product/[id]" options={{ animation: 'slide_from_right' }} />
+            <Stack.Screen name="notifications" options={{ animation: 'slide_from_right' }} />
+          </Stack>
 
-        {/* Session-expired modal — rendered after Stack so expo-router is ready */}
-        <Modal
-          visible={sessionExpired}
-          transparent
-          animationType="fade"
-          statusBarTranslucent
-          onRequestClose={() => setSessionExpired(false)}
-        >
-          <View style={styles.overlay}>
-            <View style={styles.card}>
-              <View style={styles.iconWrap}>
-                <Feather name="lock" size={28} color={theme.colors.text1} />
+          {/* Session-expired modal — rendered after Stack so expo-router is ready */}
+          <Modal
+            visible={sessionExpired}
+            transparent
+            animationType="fade"
+            statusBarTranslucent
+            onRequestClose={() => setSessionExpired(false)}
+          >
+            <View style={styles.overlay}>
+              <View style={styles.card}>
+                <View style={styles.iconWrap}>
+                  <Feather name="lock" size={28} color={theme.colors.text1} />
+                </View>
+                <Text style={styles.cardTitle}>Session expired</Text>
+                <Text style={styles.cardBody}>
+                  Your session has expired. Please sign in again to keep your favourites
+                  and continue using your account.
+                </Text>
+                <Pressable style={styles.primaryBtn} onPress={handleSignIn}>
+                  <Text style={styles.primaryBtnText}>Sign in</Text>
+                </Pressable>
+                <Pressable style={styles.dismissBtn} onPress={() => setSessionExpired(false)}>
+                  <Text style={styles.dismissBtnText}>Dismiss</Text>
+                </Pressable>
               </View>
-              <Text style={styles.cardTitle}>Session expired</Text>
-              <Text style={styles.cardBody}>
-                Your session has expired. Please sign in again to keep your favourites
-                and continue using your account.
-              </Text>
-              <Pressable style={styles.primaryBtn} onPress={handleSignIn}>
-                <Text style={styles.primaryBtnText}>Sign in</Text>
-              </Pressable>
-              <Pressable style={styles.dismissBtn} onPress={() => setSessionExpired(false)}>
-                <Text style={styles.dismissBtnText}>Dismiss</Text>
-              </Pressable>
             </View>
-          </View>
-        </Modal>
-      </FavouritesProvider>
+          </Modal>
+        </FavouritesProvider>
+      </AuthProvider>
     </SafeAreaProvider>
   );
 }

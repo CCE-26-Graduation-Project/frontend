@@ -18,12 +18,16 @@ import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { theme } from '../../constants/theme';
 import { ProductPlaceholder } from '../../components/ProductPlaceholder';
+import { FullscreenGallery } from '../../components/FullscreenGallery';
+import { VendorLogo } from '../../components/VendorLogo';
 import type { ProductTone } from '../../constants/data';
 import { useFavourites } from '../../contexts/FavouritesContext';
 import { postJson } from '../../services';
 
 const { width: SW } = Dimensions.get('window');
 const GALLERY_HEIGHT = Math.round(SW * 0.72);
+const BACK_BTN_SIZE = 44;
+const TOP_BAR_V_PADDING = 6;
 
 export default function ProductDetailScreen() {
   const insets = useSafeAreaInsets();
@@ -69,6 +73,8 @@ export default function ProductDetailScreen() {
   const captionAnim   = useRef(new Animated.Value(0)).current;
   const captionTimer  = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [fullscreenOpen, setFullscreenOpen] = useState(false);
+  const [fullscreenIndex, setFullscreenIndex] = useState(0);
   // Start with the primary image (already cached from search results), then reveal
   // additional images one by one so the user never waits for the gallery to initialize.
   const [visibleImages, setVisibleImages] = useState<string[]>(
@@ -128,7 +134,7 @@ export default function ProductDetailScreen() {
   }
 
   function handleGoToStore() {
-    if (productUrl) Linking.openURL(productUrl);
+    if (productUrl) Linking.openURL(productUrl).catch(() => {});
   }
 
   function handleGalleryScroll(e: NativeSyntheticEvent<NativeScrollEvent>) {
@@ -142,7 +148,13 @@ export default function ProductDetailScreen() {
     <View style={[styles.screen, { backgroundColor: theme.colors.bg1 }]}>
       {/* Floating back button rendered above the ScrollView */}
       <View style={[styles.topBar, { paddingTop: insets.top + 6 }]} pointerEvents="box-none">
-        <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={8}>
+        <Pressable
+          onPress={() => router.back()}
+          style={styles.backBtn}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+        >
           <Feather name="arrow-left" size={20} color={theme.colors.text1} />
         </Pressable>
       </View>
@@ -150,7 +162,12 @@ export default function ProductDetailScreen() {
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
 
         {/* ── Image gallery ──────────────────────────────────────────────────── */}
-        <View style={styles.galleryWrap}>
+        <View
+          style={[
+            styles.galleryWrap,
+            { marginTop: insets.top + TOP_BAR_V_PADDING * 2 + BACK_BTN_SIZE + theme.spacing.s3 },
+          ]}
+        >
           {hasImages ? (
             <ScrollView
               horizontal
@@ -160,13 +177,20 @@ export default function ProductDetailScreen() {
               style={styles.galleryScroll}
             >
               {visibleImages.map((uri, idx) => (
-                <Image
+                <Pressable
                   key={uri}
-                  source={{ uri }}
-                  style={styles.galleryImage}
-                  resizeMode="contain"
-                  fadeDuration={idx === 0 ? 0 : 200}
-                />
+                  onPress={() => { setFullscreenIndex(idx); setFullscreenOpen(true); }}
+                  accessibilityRole="imagebutton"
+                  accessibilityLabel={`View ${name} photo ${idx + 1} of ${allImages.length} fullscreen`}
+                >
+                  <Image
+                    source={{ uri }}
+                    style={styles.galleryImage}
+                    resizeMode="contain"
+                    fadeDuration={idx === 0 ? 0 : 200}
+                    accessibilityLabel={`${name} photo ${idx + 1} of ${allImages.length}`}
+                  />
+                </Pressable>
               ))}
             </ScrollView>
           ) : (
@@ -175,7 +199,7 @@ export default function ProductDetailScreen() {
 
           {/* Dot indicators — only when there are multiple images */}
           {hasImages && allImages.length > 1 && (
-            <View style={styles.dotsRow}>
+            <View style={styles.dotsRow} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
               {allImages.map((_, idx) => (
                 <View
                   key={idx}
@@ -201,9 +225,7 @@ export default function ProductDetailScreen() {
               </View>
             ) : null}
             <View style={styles.storeRow}>
-              <View style={styles.storeLogo}>
-                <Text style={styles.storeLogoText}>{storeLogo}</Text>
-              </View>
+              <VendorLogo vendorName={store} size={24} borderRadius={6} style={styles.storeLogo} />
               <Text style={styles.storeName} numberOfLines={1}>{store}</Text>
             </View>
           </View>
@@ -228,13 +250,21 @@ export default function ProductDetailScreen() {
             <Pressable
               style={[styles.gotoBtn, !productUrl && styles.gotoBtnDisabled]}
               onPress={handleGoToStore}
+              disabled={!productUrl}
+              accessibilityRole="button"
+              accessibilityLabel="Go to store"
             >
               <Text style={styles.gotoBtnText}>Go to store</Text>
               <Feather name="arrow-right" size={12} color="#fff" />
             </Pressable>
 
             <Animated.View style={{ transform: [{ scale: saveScaleAnim }] }}>
-              <Pressable style={[styles.saveBtn, saved && styles.saveBtnActive]} onPress={handleSave}>
+              <Pressable
+                style={[styles.saveBtn, saved && styles.saveBtnActive]}
+                onPress={handleSave}
+                accessibilityRole="button"
+                accessibilityLabel={saved ? 'Remove from favourites' : 'Add to favourites'}
+              >
                 <MaterialCommunityIcons
                   name={saved ? 'heart' : 'heart-outline'}
                   size={18}
@@ -249,6 +279,13 @@ export default function ProductDetailScreen() {
           </Animated.Text>
         </View>
       </ScrollView>
+
+      <FullscreenGallery
+        visible={fullscreenOpen}
+        images={allImages}
+        initialIndex={fullscreenIndex}
+        onClose={() => setFullscreenOpen(false)}
+      />
     </View>
   );
 }
@@ -265,7 +302,7 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   backBtn: {
-    width: 38, height: 38, borderRadius: 19,
+    width: 44, height: 44, borderRadius: 22,
     justifyContent: 'center', alignItems: 'center',
     backgroundColor: theme.colors.surface,
     ...theme.shadows.rest,
@@ -275,7 +312,7 @@ const styles = StyleSheet.create({
   galleryWrap: {
     width: SW,
     height: GALLERY_HEIGHT,
-    backgroundColor: theme.colors.bg2,
+    backgroundColor: theme.colors.bg1,
   },
   galleryScroll: {
     width: SW,
@@ -310,61 +347,57 @@ const styles = StyleSheet.create({
 
   // Info section
   infoSection: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
+    paddingHorizontal: theme.spacing.s4,
+    paddingTop: theme.spacing.s4,
     gap: 0,
   },
   productName: {
     fontSize: 20, fontWeight: '700', color: theme.colors.text1,
-    letterSpacing: -0.3, lineHeight: 26, marginBottom: 10,
+    letterSpacing: -0.3, lineHeight: 26, marginBottom: theme.spacing.s3,
   },
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    marginBottom: 12,
+    gap: theme.spacing.s2,
+    marginBottom: theme.spacing.s4,
     flexWrap: 'wrap',
   },
   catChip: {
-    paddingHorizontal: 8, paddingVertical: 4,
+    paddingHorizontal: theme.spacing.s2, paddingVertical: theme.spacing.s1,
     borderRadius: 6, backgroundColor: theme.colors.text1,
   },
   catChipText: { fontSize: 9, fontWeight: '700', color: theme.colors.surface, letterSpacing: 0.6 },
-  storeRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  storeRow: { flexDirection: 'row', alignItems: 'center', gap: theme.spacing.s1 + 2 },
   storeLogo: {
-    width: 24, height: 24, borderRadius: 6,
-    backgroundColor: theme.colors.surface,
-    justifyContent: 'center', alignItems: 'center',
     ...theme.shadows.rest,
   },
-  storeLogoText: { fontSize: 9, fontWeight: '800', color: theme.colors.text1 },
   storeName: { fontSize: 13, color: theme.colors.text2 },
-  priceBlock: { gap: 3, marginBottom: 14 },
+  priceBlock: { gap: theme.spacing.s1, marginBottom: theme.spacing.s4 },
   price: {
     fontFamily: 'monospace', fontSize: 26, fontWeight: '700',
     color: theme.colors.savings, letterSpacing: -0.4,
   },
-  priceRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  priceRow: { flexDirection: 'row', alignItems: 'center', gap: theme.spacing.s2 },
   oldPrice: {
     fontFamily: 'monospace', fontSize: 14,
     color: theme.colors.text2, textDecorationLine: 'line-through',
   },
   discBadge: {
-    paddingHorizontal: 6, paddingVertical: 2,
+    paddingHorizontal: theme.spacing.s1 + 2, paddingVertical: theme.spacing.s1 / 2,
     borderRadius: 4, backgroundColor: theme.colors.savingsSoft,
   },
   discText: { fontSize: 11, fontWeight: '700', color: theme.colors.savings },
   divider: {
     height: StyleSheet.hairlineWidth,
     backgroundColor: theme.colors.divider,
-    marginVertical: 12,
+    marginVertical: theme.spacing.s4,
   },
-  actionRow: { flexDirection: 'row', gap: 10, alignItems: 'center' },
+  actionRow: { flexDirection: 'row', gap: theme.spacing.s3, alignItems: 'center' },
   gotoBtn: {
     flex: 1, height: 48,
     backgroundColor: theme.colors.text1,
     borderRadius: theme.radius.pill,
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: theme.spacing.s1 + 2,
     ...theme.shadows.card,
   },
   gotoBtnDisabled: { opacity: 0.45 },
@@ -378,6 +411,6 @@ const styles = StyleSheet.create({
   saveBtnActive: { backgroundColor: '#FFEBCC', borderColor: '#FFEBCC' },
   savedCaption: {
     fontSize: 12, fontWeight: '600', color: theme.colors.savings,
-    marginTop: 10, textAlign: 'center',
+    marginTop: theme.spacing.s3, textAlign: 'center',
   },
 });

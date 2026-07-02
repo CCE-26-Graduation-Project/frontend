@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, Pressable, StyleSheet, Image } from 'react-native';
 import { ProductPlaceholder } from './ProductPlaceholder';
 import { Icon } from './Icon';
+import { VendorLogo } from './VendorLogo';
 import { theme } from '../constants/theme';
 import type { Product } from '../constants/data';
 import { useFavourites } from '../contexts/FavouritesContext';
@@ -14,7 +15,7 @@ interface Props {
 function ProductCardInner({ product, onPress }: Props) {
   const { toggleFavourite, isFavourite } = useFavourites();
   const saved = isFavourite(product.id);
-  const { name, store, storeLogo, price, oldPrice, discountPct, tone, imageUrl, imageUrls, category } = product;
+  const { name, store, price, oldPrice, discountPct, tone, imageUrl, imageUrls, category } = product;
   const primaryImage = imageUrl ?? imageUrls?.[0];
 
   return (
@@ -48,9 +49,7 @@ function ProductCardInner({ product, onPress }: Props) {
 
       <View style={styles.info}>
         <View style={styles.storeRow}>
-          <View style={styles.storeLogo}>
-            <Text style={styles.storeLogoText}>{storeLogo}</Text>
-          </View>
+          <VendorLogo vendorName={store} size={16} borderRadius={4} />
           <Text style={styles.storeName} numberOfLines={1}>{store}</Text>
           {category && (
             <Text style={styles.categoryBadge} numberOfLines={1}>{category}</Text>
@@ -132,19 +131,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-  },
-  storeLogo: {
-    width: 16,
-    height: 16,
-    borderRadius: 4,
-    backgroundColor: theme.colors.bg2,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  storeLogoText: {
-    fontSize: 9,
-    fontWeight: '700',
-    color: theme.colors.text1,
   },
   storeName: {
     fontSize: 12,
